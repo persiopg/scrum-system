@@ -32,29 +32,41 @@ export default function CreateSprintPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedCliente) return;
+    console.log('Form submitted');
+    console.log('Selected cliente:', selectedCliente);
+    console.log('Form data:', { name, startDate, endDate, tasks, selectedClienteId, ativarSprint });
 
-    // Criar nova sprint
-    const sprint = addSprint({ clienteId: selectedCliente.id, name, startDate, endDate, totalTasks: tasks.filter(t => t.trim()).length, isActive: ativarSprint });
-    
-    // Adicionar tarefas ao sprint em lote
-    const tasksToAdd = tasks
-      .filter(description => description.trim())
-      .map(description => ({ sprintId: sprint.id, description, status: 'pending' as const }));
-    
-    if (tasksToAdd.length > 0) {
-      addTasks(tasksToAdd);
+    try {
+      if (!selectedCliente) {
+        console.error('No cliente selected');
+        return;
+      }
+
+      // Criar nova sprint
+      const sprint = addSprint({ clienteId: selectedCliente.id, name, startDate, endDate, totalTasks: tasks.filter(t => t.trim()).length, isActive: ativarSprint });
+      console.log('Sprint created:', sprint);
+
+      // Adicionar tarefas ao sprint em lote
+      const tasksToAdd = tasks
+        .filter(description => description.trim())
+        .map(description => ({ sprintId: sprint.id, description, status: 'pending' as const }));
+
+      console.log('Tasks to add:', tasksToAdd);
+
+      if (tasksToAdd.length > 0) {
+        addTasks(tasksToAdd);
+      }
+
+      // Se ativar sprint, definir como ativa no cliente
+      if (ativarSprint) {
+        setSprintAtiva(selectedCliente.id, sprint.id);
+      }
+
+      router.push('/sprint');
+    } catch (error) {
+      console.error('Error creating sprint:', error);
     }
-
-    // Se ativar sprint, definir como ativa no cliente
-    if (ativarSprint) {
-      setSprintAtiva(selectedCliente.id, sprint.id);
-    }
-
-    router.push('/sprint');
-  };
-
-  return (
+  };  return (
     <div className="p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Criar Nova Sprint</h1>
@@ -105,6 +117,35 @@ export default function CreateSprintPage() {
                 className="w-full border border-gray-300 rounded px-3 py-2"
                 required
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Atividades do Sprint</label>
+              {tasks.map((task, index) => (
+                <div key={index} className="flex mb-2">
+                  <input
+                    type="text"
+                    placeholder="Descrição da atividade"
+                    value={task}
+                    onChange={(e) => updateTask(index, e.target.value)}
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 mr-2"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeTask(index)}
+                    className="bg-purple-900 text-white px-2 py-1 rounded"
+                  >
+                    X
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addTaskField}
+                className="bg-purple-800 text-white px-4 py-2 rounded hover:bg-purple-900"
+              >
+                Adicionar Atividade
+              </button>
             </div>
 
             <div>

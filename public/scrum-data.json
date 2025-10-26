@@ -1,10 +1,5 @@
 {
-  "clientes": [
-    {
-      "nome": "bat",
-      "id": "d7f691c9-6f10-4d01-a0a6-ad5691ac753e"
-    }
-  ],
+  "clientes": [],
   "sprints": [],
   "tasks": []
 }
