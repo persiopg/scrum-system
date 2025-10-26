@@ -1,35 +1,28 @@
 "use client";
 
 import { useState } from 'react';
-
-interface Task {
-  id: number;
-  description: string;
-  assignee?: string;
-  date?: string;
-  timeSpent?: number; // in hours
-  status: 'pending' | 'in-progress' | 'completed';
-}
+import { useScrum, Task } from '@/context/ScrumContext';
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const { sprints, tasks, addTask, updateTask, deleteTask, getTasksBySprint } = useScrum();
+  const [selectedSprintId, setSelectedSprintId] = useState<string>('');
   const [description, setDescription] = useState('');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [assignee, setAssignee] = useState('');
   const [date, setDate] = useState('');
   const [timeSpent, setTimeSpent] = useState(0);
 
-  const addTask = () => {
-    const newTask: Task = {
-      id: Date.now(),
-      description,
-      status: 'pending',
-    };
-    setTasks([...tasks, newTask]);
-    setDescription('');
+  const selectedSprint = sprints.find(s => s.id === selectedSprintId);
+  const sprintTasks = selectedSprint ? getTasksBySprint(selectedSprint.id) : [];
+
+  const addTaskToSprint = () => {
+    if (selectedSprint) {
+      addTask({ sprintId: selectedSprint.id, description, status: 'pending' });
+      setDescription('');
+    }
   };
 
-  const updateTaskStatus = (id: number, newStatus: 'pending' | 'in-progress' | 'completed') => {
+  const updateTaskStatus = (id: string, newStatus: 'pending' | 'in-progress' | 'completed') => {
     if (newStatus === 'completed') {
       const task = tasks.find(t => t.id === id);
       if (task) {
@@ -39,17 +32,13 @@ export default function TasksPage() {
         setTimeSpent(task.timeSpent || 0);
       }
     } else {
-      setTasks(tasks.map(task => task.id === id ? { ...task, status: newStatus } : task));
+      updateTask(id, { status: newStatus });
     }
   };
 
   const completeTask = () => {
     if (editingTask) {
-      setTasks(tasks.map(task => 
-        task.id === editingTask.id 
-          ? { ...task, status: 'completed', assignee, date, timeSpent } 
-          : task
-      ));
+      updateTask(editingTask.id, { status: 'completed', assignee, date, timeSpent });
       setEditingTask(null);
       setAssignee('');
       setDate('');
@@ -57,8 +46,8 @@ export default function TasksPage() {
     }
   };
 
-  const deleteTask = (id: number) => {
-    setTasks(tasks.filter(task => task.id !== id));
+  const deleteTaskFromSprint = (id: string) => {
+    deleteTask(id);
   };
 
   return (
@@ -67,21 +56,37 @@ export default function TasksPage() {
         <h1 className="text-2xl font-bold mb-6">Gerenciamento de Tarefas do Sprint</h1>
 
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4">Adicionar Atividade</h2>
-          <input
-            type="text"
-            placeholder="Descrição da atividade"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+          <label className="block text-sm font-medium mb-2">Selecionar Sprint</label>
+          <select
+            value={selectedSprintId}
+            onChange={(e) => setSelectedSprintId(e.target.value)}
             className="border border-gray-300 rounded px-3 py-2 w-full"
-          />
-          <button
-            onClick={addTask}
-            className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
-            Adicionar Atividade
-          </button>
+            <option value="">Selecione um sprint</option>
+            {sprints.map(sprint => (
+              <option key={sprint.id} value={sprint.id}>{sprint.name}</option>
+            ))}
+          </select>
         </div>
+
+        {selectedSprint && (
+          <>
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-4">Adicionar Atividade</h2>
+              <input
+                type="text"
+                placeholder="Descrição da atividade"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="border border-gray-300 rounded px-3 py-2 w-full"
+              />
+              <button
+                onClick={addTaskToSprint}
+                className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Adicionar Atividade
+              </button>
+            </div>
 
         {editingTask && (
           <div className="mb-6 p-4 border border-gray-300 rounded">
@@ -128,7 +133,7 @@ export default function TasksPage() {
         <div>
           <h2 className="text-xl font-semibold mb-4">Atividades do Sprint</h2>
           <div className="space-y-4">
-            {tasks.map((task) => (
+            {sprintTasks.map((task) => (
               <div key={task.id} className="border border-gray-300 rounded p-4">
                 <h3 className="font-semibold">{task.description}</h3>
                 <p>Status: {task.status}</p>
@@ -157,7 +162,7 @@ export default function TasksPage() {
                     </>
                   )}
                   <button
-                    onClick={() => deleteTask(task.id)}
+                    onClick={() => deleteTaskFromSprint(task.id)}
                     className="bg-red-500 text-white px-2 py-1 rounded text-sm"
                   >
                     Excluir
@@ -167,6 +172,8 @@ export default function TasksPage() {
             ))}
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   );
