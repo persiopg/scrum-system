@@ -37,47 +37,47 @@ export default function ClientsPage() {
             {clientes.length === 0 ? (
               <p>Nenhum cliente cadastrado ainda.</p>
             ) : (
-              <table className="w-full table-auto border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border border-gray-300 px-4 py-2 text-left">Nome</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Sprints</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Sprint Ativa</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {clientes.map((cliente) => (
-                    <tr key={cliente.id} className="hover:bg-gray-50">
-                      <td className="border border-gray-300 px-4 py-2">{cliente.nome}</td>
-                      <td className="border border-gray-300 px-4 py-2">{getSprintsByCliente(cliente.id).length}</td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        {cliente.sprintAtiva ? getSprintsByCliente(cliente.id).find(s => s.id === cliente.sprintAtiva)?.name : 'Nenhuma'}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2">
+              <ul role="list" className="divide-y divide-gray-200">
+                {clientes.map((cliente) => (
+                  <li key={cliente.id} className="py-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+                    <div className="grow flex items-center gap-4 min-w-0">
+                      <div className="text-sm text-gray-500 w-20">N/A</div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-gray-900 truncate">{cliente.nome}</p>
+                        <div className="mt-1">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            Cliente
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="shrink-0 flex items-center gap-4 ml-4">
+                      <p className="text-sm text-gray-500">{getSprintsByCliente(cliente.id).length} sprints</p>
+                      <p className="text-sm text-gray-500">{cliente.sprintAtiva ? getSprintsByCliente(cliente.id).find(s => s.id === cliente.sprintAtiva)?.name : 'Nenhuma'}</p>
+                      <div className="flex gap-2">
                         <Link
                           href={`/sprint/create?clienteId=${cliente.id}`}
-                          className="text-purple-600 hover:underline mr-2"
+                          className="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-800"
                         >
                           Criar Sprint
                         </Link>
                         <Link
                           href={`/dashboard?clienteId=${cliente.id}`}
-                          className="text-purple-600 hover:underline mr-2"
+                          className="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-800"
                         >
                           Dashboard
                         </Link>
                         <button
                           onClick={() => handleDelete(cliente.id)}
-                          className="bg-red-600 text-white px-2 py-1 rounded text-sm hover:bg-red-700"
+                          className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
                         >
                           Excluir
                         </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         </div>

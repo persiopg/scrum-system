@@ -137,42 +137,41 @@ export default function SprintPage() {
 
           <div className="mb-6">
             <h2 className="text-xl font-semibold mb-4">Todas as Sprints</h2>
-            <table className="w-full table-auto border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border border-gray-300 px-4 py-2 text-left">Nome</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Cliente</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Data de Início</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Data de Fim</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sprints.map(sprint => {
-                  const cliente = getClienteById(sprint.clienteId);
-                  return (
-                    <tr key={sprint.id} className="hover:bg-gray-50">
-                      <td className="border border-gray-300 px-4 py-2">{sprint.name}</td>
-                      <td className="border border-gray-300 px-4 py-2">{cliente?.nome || 'Desconhecido'}</td>
-                      <td className="border border-gray-300 px-4 py-2">{sprint.startDate}</td>
-                      <td className="border border-gray-300 px-4 py-2">{sprint.endDate}</td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        <SwitchToggle
-                          isActive={sprint.isActive}
-                          onToggle={() => toggleSprintActive(sprint.id)}
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        <button onClick={() => handleEdit(sprint.id)} className="bg-blue-600 text-white px-2 py-1 rounded mr-2 text-sm">Editar</button>
-                        <button onClick={() => handleDelete(sprint.id)} className="bg-red-600 text-white px-2 py-1 rounded mr-2 text-sm">Excluir</button>
-                        <button onClick={() => router.push(`/sprint/${sprint.id}/tasks`)} className="bg-green-600 text-white px-2 py-1 rounded text-sm">Ver Atividades</button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <ul role="list" className="divide-y divide-gray-200">
+              {sprints.map((sprint) => {
+                const cliente = getClienteById(sprint.clienteId);
+                return (
+                  <li key={sprint.id} className="py-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+                    <div className="grow flex items-center gap-4 min-w-0">
+                      <div className="text-sm text-gray-500 w-20">{sprint.startDate}</div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-gray-900 truncate">{sprint.name}</p>
+                        <div className="mt-1">
+                          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${
+                            sprint.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {sprint.isActive ? 'Ativa' : 'Inativa'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="shrink-0 flex items-center gap-4 ml-4">
+                      <p className="text-sm text-gray-500">{cliente?.nome || 'Desconhecido'}</p>
+                      <p className="text-sm text-gray-500">{sprint.endDate}</p>
+                      <SwitchToggle
+                        isActive={sprint.isActive}
+                        onToggle={() => toggleSprintActive(sprint.id)}
+                      />
+                      <div className="flex gap-2">
+                        <button onClick={() => handleEdit(sprint.id)} className="bg-blue-600 text-white px-3 py-1 rounded text-sm">Editar</button>
+                        <button onClick={() => handleDelete(sprint.id)} className="bg-red-600 text-white px-3 py-1 rounded text-sm">Excluir</button>
+                        <button onClick={() => router.push(`/sprint/${sprint.id}/tasks`)} className="bg-green-600 text-white px-3 py-1 rounded text-sm">Ver Atividades</button>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </div>
       </div>
