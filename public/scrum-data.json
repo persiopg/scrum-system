@@ -3,7 +3,7 @@
     {
       "nome": "bat",
       "id": "7b10c30e-2056-4302-b6fb-ec4033b5e8d8",
-      "sprintAtiva": "439b902f-8095-4d43-999d-5885ff26bfcb"
+      "sprintAtiva": "d98f6f87-e267-45f0-aa9e-430d884bc81d"
     }
   ],
   "sprints": [
@@ -13,7 +13,7 @@
       "startDate": "2025-10-27",
       "endDate": "2025-10-31",
       "totalTasks": 1,
-      "isActive": false,
+      "isActive": true,
       "id": "d98f6f87-e267-45f0-aa9e-430d884bc81d"
     },
     {
@@ -22,7 +22,7 @@
       "startDate": "2025-10-27",
       "endDate": "2025-11-08",
       "totalTasks": 5,
-      "isActive": true,
+      "isActive": false,
       "id": "439b902f-8095-4d43-999d-5885ff26bfcb"
     }
   ],

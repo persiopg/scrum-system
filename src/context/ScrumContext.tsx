@@ -39,6 +39,7 @@ interface ScrumContextType {
   moveSprintToCliente: (sprintId: string, newClienteId: string) => void;
   deleteSprint: (sprintId: string) => void;
   setSprintAtiva: (clienteId: string, sprintId: string) => Promise<void>;
+  toggleSprintActive: (sprintId: string) => Promise<void>;
   getClienteById: (id: string) => Cliente | undefined;
   getSprintsByCliente: (clienteId: string) => Sprint[];
   getTasksBySprint: (sprintId: string) => Task[];
@@ -206,6 +207,31 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
     await saveData();
   };
 
+  const toggleSprintActive = async (sprintId: string) => {
+    const sprint = sprintsRef.current.find(s => s.id === sprintId);
+    if (!sprint) return;
+
+    const cliente = clientesRef.current.find(c => c.id === sprint.clienteId);
+    if (!cliente) return;
+
+    if (sprint.isActive) {
+      // Desativar: remover sprintAtiva
+      const newClientes = clientesRef.current.map(c =>
+        c.id === cliente.id ? { ...c, sprintAtiva: undefined } : c
+      );
+      clientesRef.current = newClientes;
+      setClientes(newClientes);
+      const newSprints = sprintsRef.current.map(s =>
+        s.id === sprintId ? { ...s, isActive: false } : s
+      );
+      sprintsRef.current = newSprints;
+      setSprints(newSprints);
+    } else {
+      // Ativar: definir como sprintAtiva
+      await setSprintAtiva(cliente.id, sprintId);
+    }
+  };
+
   const getClienteById = (id: string) => {
     return clientes.find(cliente => cliente.id === id);
   };
@@ -274,6 +300,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
       moveSprintToCliente,
       deleteSprint,
       setSprintAtiva,
+      toggleSprintActive,
       getClienteById,
       getSprintsByCliente,
       getTasksBySprint,

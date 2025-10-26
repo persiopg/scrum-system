@@ -3,9 +3,10 @@
 import { useScrum } from '@/context/ScrumContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
+import SwitchToggle from '@/components/SwitchToggle';
 
 export default function SprintPage() {
-  const { sprints, getClienteById, deleteSprint, updateSprint, clientes } = useScrum();
+  const { sprints, getClienteById, deleteSprint, updateSprint, clientes, toggleSprintActive } = useScrum();
   const router = useRouter();
   const searchParams = useSearchParams();
   const editSprintId = searchParams.get('editSprintId');
@@ -155,7 +156,12 @@ export default function SprintPage() {
                     <td className="border border-gray-300 px-4 py-2">{cliente?.nome || 'Desconhecido'}</td>
                     <td className="border border-gray-300 px-4 py-2">{sprint.startDate}</td>
                     <td className="border border-gray-300 px-4 py-2">{sprint.endDate}</td>
-                    <td className="border border-gray-300 px-4 py-2">{sprint.isActive ? 'Ativa' : 'Inativa'}</td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <SwitchToggle
+                        isActive={sprint.isActive}
+                        onToggle={() => toggleSprintActive(sprint.id)}
+                      />
+                    </td>
                     <td className="border border-gray-300 px-4 py-2">
                       <button onClick={() => handleEdit(sprint.id)} className="bg-blue-600 text-white px-2 py-1 rounded mr-2 text-sm">Editar</button>
                       <button onClick={() => handleDelete(sprint.id)} className="bg-red-600 text-white px-2 py-1 rounded mr-2 text-sm">Excluir</button>
