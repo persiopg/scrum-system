@@ -36,7 +36,7 @@ export function BurndownChart({ data }: BurndownChartProps) {
           <Tooltip
             formatter={(value: number, name: string) => [
               typeof value === 'number' ? value.toFixed(1) : value,
-              name === 'expected' ? 'Expectativa' : 'Real'
+              name === 'expected' ? 'Expectativa (Restantes)' : 'Real (Restantes)'
             ]}
           />
           <Legend />
@@ -44,7 +44,7 @@ export function BurndownChart({ data }: BurndownChartProps) {
             type="monotone"
             dataKey="expected"
             stroke="#2B124C"
-            name="Expectativa"
+            name="Expectativa (Restantes)"
             strokeWidth={2}
             dot={{ r: 3 }}
           />
@@ -52,7 +52,7 @@ export function BurndownChart({ data }: BurndownChartProps) {
             type="monotone"
             dataKey="actual"
             stroke="#854F6C"
-            name="Real"
+            name="Real (Restantes)"
             strokeWidth={2}
             dot={{ r: 3 }}
           />

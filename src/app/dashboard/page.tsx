@@ -63,23 +63,35 @@ function DashboardContent() {
         date.setDate(start.getDate() + i);
         const dayStr = date.toISOString().split('T')[0];
 
-        // Cálculo da linha ideal (expectativa)
+        // Cálculo da linha ideal (expectativa) - decrescente para burndown
         const progressRatio = i / Math.max(1, days - 1);
         const expectedRemaining = totalTasks * (1 - progressRatio);
 
-        // Cálculo da linha real baseada nas tarefas concluídas até esta data
+        // Cálculo das tarefas concluídas até esta data
+        // Suporta campos 'date' ou 'completedDate' para marcar conclusão
         const completedUpToDay = tasks.filter(task => {
-          if (task.status !== 'completed' || !task.date) return false;
-          const taskDate = new Date(task.date);
+          if (task.status !== 'completed') return false;
+          const t = task as unknown as Record<string, unknown>;
+          const dateStr = typeof t.completedDate === 'string'
+            ? t.completedDate
+            : typeof t.date === 'string'
+              ? t.date
+              : typeof t.completed_at === 'string'
+                ? t.completed_at
+                : undefined;
+          if (!dateStr) return false;
+          const taskDate = new Date(dateStr);
+          if (isNaN(taskDate.getTime())) return false;
           return taskDate <= date;
         }).length;
 
-        const actualRemaining = totalTasks - completedUpToDay;
+        // Aqui armazenamos o restante real (total - concluídas até o dia)
+        const actualRemaining = Math.max(0, totalTasks - completedUpToDay);
 
         data.push({
           day: dayStr,
           expected: Math.max(0, Math.round(expectedRemaining * 100) / 100),
-          actual: Math.max(0, actualRemaining),
+          actual: actualRemaining,
         });
       }
 
