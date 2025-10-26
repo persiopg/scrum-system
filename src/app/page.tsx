@@ -55,10 +55,10 @@ export default function Home() {
   const chartData = generateChartData();
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="p-8">
       <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
         <div className="mb-4">
-          <Link href="/tasks" className="text-blue-500 hover:underline">Gerenciar Tarefas</Link>
+          <Link href="/tasks" className="text-blue-500 hover:underline">Gerenciar Atividades do Sprint</Link>
         </div>
         <h1 className="text-2xl font-bold mb-6">Sistema de Gestão Scrum</h1>
 
