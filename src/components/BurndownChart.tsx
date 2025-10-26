@@ -36,10 +36,8 @@ export function BurndownChart({ data }: BurndownChartProps) {
           <Tooltip
             formatter={(value: number, name: string) => {
               const formatNumber = (v: number) => (Number.isInteger(v) ? String(v) : v.toFixed(1));
-              return [
-                typeof value === 'number' ? formatNumber(value) : value,
-                name === 'expected' ? 'Expectativa (Restantes)' : 'Real (Restantes)'
-              ];
+              // `name` already contains the human readable label passed via the Line `name` prop
+              return [typeof value === 'number' ? formatNumber(value) : value, name];
             }}
           />
           <Legend />

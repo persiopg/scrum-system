@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Menu } from "@/components/Menu";
+import HeaderToggle from '@/components/HeaderToggle';
+import HeaderSearch from '@/components/HeaderSearch';
 import { ScrumProvider } from "@/context/ScrumContext";
 
 const geistSans = Geist({
@@ -35,9 +37,12 @@ export default function RootLayout({
 
             <div className="main-layout">
               <header className="topbar">
-                <div className="flex-1 w-full">
-                  <input className="search-input" placeholder="Search Files" />
-                </div> 
+                <div className="flex items-center gap-3 w-full">
+                  <HeaderToggle />
+                  <div className="flex-1 w-full">
+                    <HeaderSearch />
+                  </div>
+                </div>
               </header>
 
               <main className="main-content">{children}</main>

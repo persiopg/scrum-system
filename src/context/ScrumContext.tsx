@@ -30,6 +30,7 @@ export interface Cliente {
 
 interface ScrumContextType {
   clientes: Cliente[];
+  tasks: Task[];
   sprints: Sprint[];
   addCliente: (cliente: Omit<Cliente, 'id'>) => Promise<Cliente>;
   updateCliente: (id: string, updates: Partial<Cliente>) => void;
@@ -291,6 +292,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
   return (
     <ScrumContext.Provider value={{
       clientes,
+      tasks,
       sprints,
       addCliente,
       updateCliente,
