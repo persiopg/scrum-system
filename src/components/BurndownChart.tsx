@@ -34,10 +34,13 @@ export function BurndownChart({ data }: BurndownChartProps) {
           />
           <YAxis />
           <Tooltip
-            formatter={(value: number, name: string) => [
-              typeof value === 'number' ? value.toFixed(1) : value,
-              name === 'expected' ? 'Expectativa (Restantes)' : 'Real (Restantes)'
-            ]}
+            formatter={(value: number, name: string) => {
+              const formatNumber = (v: number) => (Number.isInteger(v) ? String(v) : v.toFixed(1));
+              return [
+                typeof value === 'number' ? formatNumber(value) : value,
+                name === 'expected' ? 'Expectativa (Restantes)' : 'Real (Restantes)'
+              ];
+            }}
           />
           <Legend />
           <Line
