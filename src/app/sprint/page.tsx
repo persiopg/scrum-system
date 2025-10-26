@@ -145,7 +145,7 @@ export default function SprintPage() {
                     <div className="grow flex items-center gap-4 min-w-0">
                       <div className="text-sm text-gray-500 w-20">{sprint.startDate}</div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-gray-900 truncate">{sprint.name}</p>
+                        <p className="font-medium text-white truncate">{sprint.name}</p>
                         <div className="mt-1">
                           <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${
                             sprint.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'

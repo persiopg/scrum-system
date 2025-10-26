@@ -43,7 +43,7 @@ export default function ClientsPage() {
                     <div className="grow flex items-center gap-4 min-w-0">
                       <div className="text-sm text-gray-500 w-20">N/A</div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-gray-900 truncate">{cliente.nome}</p>
+                        <p className="font-medium text-white truncate">{cliente.nome}</p>
                         <div className="mt-1">
                           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                             Cliente
