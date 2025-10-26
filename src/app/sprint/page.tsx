@@ -5,7 +5,7 @@ import { useScrum } from '@/context/ScrumContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function SprintPage() {
-  const { clientes, getClienteById, addSprintToCliente, addTask, setSprintAtiva } = useScrum();
+  const { clientes, getClienteById, addSprintToCliente, addTasks, setSprintAtiva } = useScrum();
   const router = useRouter();
   const searchParams = useSearchParams();
   const clienteId = searchParams.get('clienteId');
@@ -37,10 +37,15 @@ export default function SprintPage() {
     if (!selectedCliente) return;
 
     const sprint = addSprintToCliente(selectedCliente.id, { name, startDate, endDate, totalTasks: tasks.filter(t => t.trim()).length });
-    // Adicionar tarefas ao sprint
-    tasks.filter(t => t.trim()).forEach(description => {
-      addTask({ sprintId: sprint.id, description, status: 'pending' });
-    });
+    
+    // Adicionar tarefas ao sprint em lote
+    const tasksToAdd = tasks
+      .filter(description => description.trim())
+      .map(description => ({ sprintId: sprint.id, description, status: 'pending' as const }));
+    
+    if (tasksToAdd.length > 0) {
+      addTasks(tasksToAdd);
+    }
 
     if (ativarSprint) {
       setSprintAtiva(selectedCliente.id, sprint.id);

@@ -38,6 +38,7 @@ interface ScrumContextType {
   getClienteById: (id: string) => Cliente | undefined;
   getTasksBySprint: (sprintId: string) => Task[];
   addTask: (task: Omit<Task, 'id'>) => void;
+  addTasks: (tasks: Omit<Task, 'id'>[]) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
   exportData: () => { clientes: Cliente[], tasks: Task[] };
@@ -132,7 +133,13 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
 
   const addTask = (task: Omit<Task, 'id'>) => {
     const newTask: Task = { ...task, id: generateId() };
-    setTasks([...tasks, newTask]);
+    setTasks(prevTasks => [...prevTasks, newTask]);
+  };
+
+  // Função para adicionar múltiplas tarefas de uma vez
+  const addTasks = (tasksToAdd: Omit<Task, 'id'>[]) => {
+    const newTasks = tasksToAdd.map(task => ({ ...task, id: generateId() }));
+    setTasks(prevTasks => [...prevTasks, ...newTasks]);
   };
 
   const updateTask = (id: string, updates: Partial<Task>) => {
@@ -167,6 +174,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
       getClienteById,
       getTasksBySprint,
       addTask,
+      addTasks,
       updateTask,
       deleteTask,
       exportData,
