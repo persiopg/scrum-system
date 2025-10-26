@@ -77,27 +77,25 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
         if (data.tasks) setTasks(data.tasks);
 
         // Corrigir dados: definir sprintAtiva e garantir apenas uma ativa por cliente
-        setTimeout(() => {
-          if (data.sprints && data.clientes) {
-            const correctedClientes = data.clientes.map((cliente: Cliente) => {
-              const activeSprints = data.sprints.filter((s: Sprint) => s.clienteId === cliente.id && s.isActive);
-              if (activeSprints.length > 0 && !cliente.sprintAtiva) {
-                return { ...cliente, sprintAtiva: activeSprints[0].id };
-              }
-              return cliente;
-            });
-            setClientes(correctedClientes);
+        if (data.sprints && data.clientes) {
+          const correctedClientes = data.clientes.map((cliente: Cliente) => {
+            const activeSprints = data.sprints.filter((s: Sprint) => s.clienteId === cliente.id && s.isActive);
+            if (activeSprints.length > 0 && !cliente.sprintAtiva) {
+              return { ...cliente, sprintAtiva: activeSprints[0].id };
+            }
+            return cliente;
+          });
+          setClientes(correctedClientes);
 
-            const correctedSprints = data.sprints.map((sprint: Sprint) => {
-              const activeSprints = data.sprints.filter((s: Sprint) => s.clienteId === sprint.clienteId && s.isActive);
-              if (activeSprints.length > 1 && sprint.id !== activeSprints[0].id && sprint.isActive) {
-                return { ...sprint, isActive: false };
-              }
-              return sprint;
-            });
-            setSprints(correctedSprints);
-          }
-        }, 0);
+          const correctedSprints = data.sprints.map((sprint: Sprint) => {
+            const activeSprints = data.sprints.filter((s: Sprint) => s.clienteId === sprint.clienteId && s.isActive);
+            if (activeSprints.length > 1 && sprint.id !== activeSprints[0].id && sprint.isActive) {
+              return { ...sprint, isActive: false };
+            }
+            return sprint;
+          });
+          setSprints(correctedSprints);
+        }
       })
       .catch(err => console.error('Failed to load data:', err));
   }, []);

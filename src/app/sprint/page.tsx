@@ -87,6 +87,11 @@ export default function SprintPage() {
       if (tasksToAdd.length > 0) {
         addTasks(tasksToAdd);
       }
+
+      // Se ativar sprint, definir como ativa no cliente
+      if (ativarSprint) {
+        setSprintAtiva(selectedCliente.id, sprint.id);
+      }
     }
 
     router.push(`/dashboard?clienteId=${selectedCliente.id}`);
