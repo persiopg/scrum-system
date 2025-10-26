@@ -70,105 +70,106 @@ export default function CreateSprintPage() {
       console.error('Error creating sprint:', error);
     }
   };  return (
-    <div className="p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Criar Nova Sprint</h1>
+    <div className="p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="card">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-4">Criar Nova Sprint</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Selecionar Cliente</label>
+                <select
+                  value={selectedClienteId}
+                  onChange={(e) => setSelectedClienteId(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  required
+                >
+                  <option value="">Selecione um cliente</option>
+                  {clientes.map(cliente => (
+                    <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
+                  ))}
+                </select>
+              </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Selecionar Cliente</label>
-              <select
-                value={selectedClienteId}
-                onChange={(e) => setSelectedClienteId(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                required
-              >
-                <option value="">Selecione um cliente</option>
-                {clientes.map(cliente => (
-                  <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Nome do Sprint</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Data de Início</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Data de Fim</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Atividades do Sprint</label>
-              {tasks.map((task, index) => (
-                <div key={index} className="flex mb-2">
-                  <input
-                    type="text"
-                    placeholder="Descrição da atividade"
-                    value={task}
-                    onChange={(e) => updateTask(index, e.target.value)}
-                    className="flex-1 border border-gray-300 rounded px-3 py-2 mr-2"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeTask(index)}
-                    className="bg-purple-900 text-white px-2 py-1 rounded"
-                  >
-                    X
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addTaskField}
-                className="bg-purple-800 text-white px-4 py-2 rounded hover:bg-purple-900"
-              >
-                Adicionar Atividade
-              </button>
-            </div>
-
-            <div>
-              <label className="flex items-center">
+              <div>
+                <label className="block text-sm font-medium mb-1">Nome do Sprint</label>
                 <input
-                  type="checkbox"
-                  checked={ativarSprint}
-                  onChange={(e) => setAtivarSprint(e.target.checked)}
-                  className="mr-2"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  required
                 />
-                Ativar esta sprint após criar
-              </label>
-            </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Data de Início</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Data de Fim</label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                />
+              </div>
 
-            <button
-              type="submit"
-              className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800"
-              disabled={!selectedCliente}
-            >
-              Criar Sprint
-            </button>
-          </form>
+              <div>
+                <label className="block text-sm font-medium mb-2">Atividades do Sprint</label>
+                {tasks.map((task, index) => (
+                  <div key={index} className="flex mb-2">
+                    <input
+                      type="text"
+                      placeholder="Descrição da atividade"
+                      value={task}
+                      onChange={(e) => updateTask(index, e.target.value)}
+                      className="flex-1 border border-gray-300 rounded px-3 py-2 mr-2"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeTask(index)}
+                      className="bg-purple-900 text-white px-2 py-1 rounded"
+                    >
+                      X
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addTaskField}
+                  className="bg-purple-800 text-white px-4 py-2 rounded hover:bg-purple-900"
+                >
+                  Adicionar Atividade
+                </button>
+              </div>
+
+              <div>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={ativarSprint}
+                    onChange={(e) => setAtivarSprint(e.target.checked)}
+                    className="mr-2"
+                  />
+                  Ativar esta sprint após criar
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800"
+                disabled={!selectedCliente}
+              >
+                Criar Sprint
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>

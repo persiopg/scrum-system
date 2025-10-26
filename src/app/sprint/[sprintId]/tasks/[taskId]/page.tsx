@@ -44,91 +44,92 @@ export default function EditTaskPage() {
   };
 
   return (
-    <div className="p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Editar Atividade</h1>
-        <p className="text-gray-600 mb-6">Sprint: {sprint.name}</p>
+    <div className="p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="card">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-4">Editar Atividade</h2>
+            <p className="text-gray-600 mb-4">Sprint: {sprint.name}</p>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Descrição</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 h-24"
+                  required
+                />
+              </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Descrição</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 h-24"
-                required
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Status</label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as 'pending' | 'in-progress' | 'completed')}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                >
+                  <option value="pending">Pendente</option>
+                  <option value="in-progress">Em Andamento</option>
+                  <option value="completed">Concluída</option>
+                </select>
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">Status</label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as 'pending' | 'in-progress' | 'completed')}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              >
-                <option value="pending">Pendente</option>
-                <option value="in-progress">Em Andamento</option>
-                <option value="completed">Concluída</option>
-              </select>
-            </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Data de Conclusão</label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">Data de Conclusão</label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Tempo Gasto (horas)</label>
+                <input
+                  type="number"
+                  value={timeSpent}
+                  onChange={(e) => setTimeSpent(e.target.value === '' ? '' : Number(e.target.value))}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  min="0"
+                  step="0.5"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">Tempo Gasto (horas)</label>
-              <input
-                type="number"
-                value={timeSpent}
-                onChange={(e) => setTimeSpent(e.target.value === '' ? '' : Number(e.target.value))}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                min="0"
-                step="0.5"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Responsável</label>
+                <input
+                  type="text"
+                  value={assignee}
+                  onChange={(e) => setAssignee(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">Responsável</label>
-              <input
-                type="text"
-                value={assignee}
-                onChange={(e) => setAssignee(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
-
-            <div className="flex space-x-2">
-              <button
-                type="submit"
-                className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800"
-              >
-                Salvar
-              </button>
-              <button
-                type="button"
-                onClick={() => router.push(`/sprint/${sprintId}/tasks`)}
-                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-800"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-              >
-                Excluir
-              </button>
-            </div>
-          </form>
+              <div className="flex space-x-2">
+                <button
+                  type="submit"
+                  className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800"
+                >
+                  Salvar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/sprint/${sprintId}/tasks`)}
+                  className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-800"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                >
+                  Excluir
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>

@@ -19,65 +19,67 @@ export default function ClientsPage() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Gerenciamento de Clientes</h1>
-          <button
-            onClick={handleCreateNew}
-            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800"
-          >
-            Criar Novo Cliente
-          </button>
-        </div>
+        <div className="card">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-4">Gerenciamento de Clientes</h2>
+            <button
+              onClick={handleCreateNew}
+              className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800"
+            >
+              Criar Novo Cliente
+            </button>
+          </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Clientes Cadastrados</h2>
-          {clientes.length === 0 ? (
-            <p>Nenhum cliente cadastrado ainda.</p>
-          ) : (
-            <table className="w-full table-auto border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border border-gray-300 px-4 py-2 text-left">Nome</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Sprints</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Sprint Ativa</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {clientes.map((cliente) => (
-                  <tr key={cliente.id} className="hover:bg-gray-50">
-                    <td className="border border-gray-300 px-4 py-2">{cliente.nome}</td>
-                    <td className="border border-gray-300 px-4 py-2">{getSprintsByCliente(cliente.id).length}</td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {cliente.sprintAtiva ? getSprintsByCliente(cliente.id).find(s => s.id === cliente.sprintAtiva)?.name : 'Nenhuma'}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <Link
-                        href={`/sprint/create?clienteId=${cliente.id}`}
-                        className="text-purple-600 hover:underline mr-2"
-                      >
-                        Criar Sprint
-                      </Link>
-                      <Link
-                        href={`/dashboard?clienteId=${cliente.id}`}
-                        className="text-purple-600 hover:underline mr-2"
-                      >
-                        Dashboard
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(cliente.id)}
-                        className="bg-red-600 text-white px-2 py-1 rounded text-sm hover:bg-red-700"
-                      >
-                        Excluir
-                      </button>
-                    </td>
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-4">Clientes Cadastrados</h2>
+            {clientes.length === 0 ? (
+              <p>Nenhum cliente cadastrado ainda.</p>
+            ) : (
+              <table className="w-full table-auto border-collapse border border-gray-300">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border border-gray-300 px-4 py-2 text-left">Nome</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">Sprints</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">Sprint Ativa</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">Ações</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+                </thead>
+                <tbody>
+                  {clientes.map((cliente) => (
+                    <tr key={cliente.id} className="hover:bg-gray-50">
+                      <td className="border border-gray-300 px-4 py-2">{cliente.nome}</td>
+                      <td className="border border-gray-300 px-4 py-2">{getSprintsByCliente(cliente.id).length}</td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        {cliente.sprintAtiva ? getSprintsByCliente(cliente.id).find(s => s.id === cliente.sprintAtiva)?.name : 'Nenhuma'}
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        <Link
+                          href={`/sprint/create?clienteId=${cliente.id}`}
+                          className="text-purple-600 hover:underline mr-2"
+                        >
+                          Criar Sprint
+                        </Link>
+                        <Link
+                          href={`/dashboard?clienteId=${cliente.id}`}
+                          className="text-purple-600 hover:underline mr-2"
+                        >
+                          Dashboard
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(cliente.id)}
+                          className="bg-red-600 text-white px-2 py-1 rounded text-sm hover:bg-red-700"
+                        >
+                          Excluir
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
       </div>
     </div>
