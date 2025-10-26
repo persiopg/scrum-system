@@ -2,25 +2,29 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { BurndownChart } from '@/components/BurndownChart';
 import { useScrum } from '@/context/ScrumContext';
 
 export default function DashboardPage() {
-  const { sprints, getTasksBySprint, exportData, importData } = useScrum();
-  const [selectedSprintId, setSelectedSprintId] = useState<string>('');
+  const { clientes, getClienteById, getTasksBySprint, exportData, importData } = useScrum();
+  const searchParams = useSearchParams();
+  const clienteId = searchParams.get('clienteId');
+  const [selectedClienteId, setSelectedClienteId] = useState<string>(clienteId || '');
 
-  const selectedSprint = sprints.find(s => s.id === selectedSprintId);
-  const tasks = selectedSprint ? getTasksBySprint(selectedSprint.id) : [];
+  const selectedCliente = selectedClienteId ? getClienteById(selectedClienteId) : null;
+  const sprintAtiva = selectedCliente?.sprintAtiva ? selectedCliente.sprints.find(s => s.id === selectedCliente.sprintAtiva) : null;
+  const tasks = sprintAtiva ? getTasksBySprint(sprintAtiva.id) : [];
 
   const generateChartData = () => {
-    if (!selectedSprint) return [];
+    if (!sprintAtiva) return [];
 
-    const start = new Date(selectedSprint.startDate);
-    const end = new Date(selectedSprint.endDate);
+    const start = new Date(sprintAtiva.startDate);
+    const end = new Date(sprintAtiva.endDate);
     const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
     const data = [];
-    const totalTasks = selectedSprint.totalTasks;
+    const totalTasks = sprintAtiva.totalTasks;
     let actualRemaining = totalTasks;
 
     for (let i = 0; i < days; i++) {
@@ -102,42 +106,55 @@ export default function DashboardPage() {
         </div>
 
         <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">Selecionar Sprint</label>
+          <label className="block text-sm font-medium mb-2">Selecionar Cliente</label>
           <select
-            value={selectedSprintId}
-            onChange={(e) => setSelectedSprintId(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 w-full"
+            value={selectedClienteId}
+            onChange={(e) => setSelectedClienteId(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-2 w-full mb-4"
           >
-            <option value="">Selecione um sprint</option>
-            {sprints.map(sprint => (
-              <option key={sprint.id} value={sprint.id}>{sprint.name}</option>
+            <option value="">Selecione um cliente</option>
+            {clientes.map(cliente => (
+              <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
             ))}
           </select>
-          <Link href="/sprint" className="text-purple-600 hover:underline ml-4">Criar Novo Sprint</Link>
+          <Link href="/clients" className="text-purple-600 hover:underline">Gerenciar Clientes</Link>
         </div>
 
-        {selectedSprint && (
+        {selectedCliente && (
           <>
             <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-4">Gráfico de Burndown</h2>
-              {chartData.length > 0 ? (
-                <BurndownChart data={chartData} />
+              <h2 className="text-xl font-semibold mb-4">Cliente: {selectedCliente.nome}</h2>
+              {sprintAtiva ? (
+                <p>Sprint Ativa: {sprintAtiva.name}</p>
               ) : (
-                <p>Configure um sprint para ver o gráfico.</p>
+                <p>Nenhuma sprint ativa. <Link href={`/sprint?clienteId=${selectedCliente.id}`} className="text-purple-600 hover:underline">Criar uma sprint</Link></p>
               )}
             </div>
 
-            <div className="mb-6">
-              <Link href="/tasks" className="text-purple-600 hover:underline">Gerenciar Tarefas do Sprint</Link>
-            </div>
+            {sprintAtiva && (
+              <>
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold mb-4">Gráfico de Burndown</h2>
+                  {chartData.length > 0 ? (
+                    <BurndownChart data={chartData} />
+                  ) : (
+                    <p>Configure um sprint para ver o gráfico.</p>
+                  )}
+                </div>
 
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Resumo do Sprint</h2>
-              <p>Total de Tarefas: {selectedSprint.totalTasks}</p>
-              <p>Tarefas Concluídas: {tasks.filter(t => t.status === 'completed').length}</p>
-              <p>Tarefas em Andamento: {tasks.filter(t => t.status === 'in-progress').length}</p>
-              <p>Tarefas Pendentes: {tasks.filter(t => t.status === 'pending').length}</p>
-            </div>
+                <div className="mb-6">
+                  <Link href={`/tasks?clienteId=${selectedCliente.id}`} className="text-purple-600 hover:underline">Gerenciar Tarefas da Sprint Ativa</Link>
+                </div>
+
+                <div>
+                  <h2 className="text-xl font-semibold mb-4">Resumo da Sprint Ativa</h2>
+                  <p>Total de Tarefas: {sprintAtiva.totalTasks}</p>
+                  <p>Tarefas Concluídas: {tasks.filter(t => t.status === 'completed').length}</p>
+                  <p>Tarefas em Andamento: {tasks.filter(t => t.status === 'in-progress').length}</p>
+                  <p>Tarefas Pendentes: {tasks.filter(t => t.status === 'pending').length}</p>
+                </div>
+              </>
+            )}
           </>
         )}
       </div>

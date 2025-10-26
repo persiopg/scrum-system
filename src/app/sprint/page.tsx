@@ -2,15 +2,21 @@
 
 import { useState } from 'react';
 import { useScrum } from '@/context/ScrumContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function SprintPage() {
-  const { addSprint, addTask } = useScrum();
+  const { clientes, getClienteById, addSprintToCliente, addTask, setSprintAtiva } = useScrum();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const clienteId = searchParams.get('clienteId');
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [tasks, setTasks] = useState<string[]>(['']); // Array de descrições de tarefas
+  const [selectedClienteId, setSelectedClienteId] = useState<string>(clienteId || '');
+  const [ativarSprint, setAtivarSprint] = useState(false);
+
+  const selectedCliente = selectedClienteId ? getClienteById(selectedClienteId) : null;
 
   const addTaskField = () => {
     setTasks([...tasks, '']);
@@ -28,12 +34,19 @@ export default function SprintPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const sprint = addSprint({ name, startDate, endDate, totalTasks: tasks.filter(t => t.trim()).length });
+    if (!selectedCliente) return;
+
+    const sprint = addSprintToCliente(selectedCliente.id, { name, startDate, endDate, totalTasks: tasks.filter(t => t.trim()).length });
     // Adicionar tarefas ao sprint
     tasks.filter(t => t.trim()).forEach(description => {
       addTask({ sprintId: sprint.id, description, status: 'pending' });
     });
-    router.push('/dashboard');
+
+    if (ativarSprint) {
+      setSprintAtiva(selectedCliente.id, sprint.id);
+    }
+
+    router.push(`/dashboard?clienteId=${selectedCliente.id}`);
   };
 
   return (
@@ -41,6 +54,21 @@ export default function SprintPage() {
       <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
         <h1 className="text-2xl font-bold mb-6">Criar Novo Sprint</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Selecionar Cliente</label>
+            <select
+              value={selectedClienteId}
+              onChange={(e) => setSelectedClienteId(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              required
+            >
+              <option value="">Selecione um cliente</option>
+              {clientes.map(cliente => (
+                <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label className="block text-sm font-medium mb-1">Nome do Sprint</label>
             <input
@@ -101,9 +129,22 @@ export default function SprintPage() {
             </button>
           </div>
 
+          <div>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={ativarSprint}
+                onChange={(e) => setAtivarSprint(e.target.checked)}
+                className="mr-2"
+              />
+              Ativar esta sprint após criar
+            </label>
+          </div>
+
           <button
             type="submit"
             className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800"
+            disabled={!selectedCliente}
           >
             Criar Sprint
           </button>

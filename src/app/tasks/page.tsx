@@ -2,9 +2,13 @@
 
 import { useState } from 'react';
 import { useScrum, Task } from '@/context/ScrumContext';
+import { useSearchParams } from 'next/navigation';
 
 export default function TasksPage() {
-  const { sprints, tasks, addTask, updateTask, deleteTask, getTasksBySprint } = useScrum();
+  const { clientes, getClienteById, getTasksBySprint, addTask, updateTask, deleteTask, setSprintAtiva } = useScrum();
+  const searchParams = useSearchParams();
+  const clienteId = searchParams.get('clienteId');
+  const [selectedClienteId, setSelectedClienteId] = useState<string>(clienteId || '');
   const [selectedSprintId, setSelectedSprintId] = useState<string>('');
   const [description, setDescription] = useState('');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -14,7 +18,9 @@ export default function TasksPage() {
   const [editingDescription, setEditingDescription] = useState<string | null>(null);
   const [newDescription, setNewDescription] = useState('');
 
-  const selectedSprint = sprints.find(s => s.id === selectedSprintId);
+  const selectedCliente = selectedClienteId ? getClienteById(selectedClienteId) : null;
+  const sprintAtiva = selectedCliente?.sprintAtiva ? selectedCliente.sprints.find(s => s.id === selectedCliente.sprintAtiva) : null;
+  const selectedSprint = selectedSprintId ? selectedCliente?.sprints.find(s => s.id === selectedSprintId) : sprintAtiva;
   const sprintTasks = selectedSprint ? getTasksBySprint(selectedSprint.id) : [];
 
   const addTaskToSprint = () => {
@@ -26,7 +32,7 @@ export default function TasksPage() {
 
   const updateTaskStatus = (id: string, newStatus: 'pending' | 'in-progress' | 'completed') => {
     if (newStatus === 'completed') {
-      const task = tasks.find(t => t.id === id);
+      const task = sprintTasks.find(t => t.id === id);
       if (task) {
         setEditingTask(task);
         setAssignee(task.assignee || '');
@@ -65,43 +71,79 @@ export default function TasksPage() {
     }
   };
 
+  const handleActivateSprint = (sprintId: string) => {
+    if (selectedCliente) {
+      setSprintAtiva(selectedCliente.id, sprintId);
+      setSelectedSprintId(sprintId);
+    }
+  };
+
   return (
     <div className="p-8">
       <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
         <h1 className="text-2xl font-bold mb-6">Gerenciamento de Tarefas do Sprint</h1>
 
         <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">Selecionar Sprint</label>
+          <label className="block text-sm font-medium mb-2">Selecionar Cliente</label>
           <select
-            value={selectedSprintId}
-            onChange={(e) => setSelectedSprintId(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 w-full"
+            value={selectedClienteId}
+            onChange={(e) => {
+              setSelectedClienteId(e.target.value);
+              setSelectedSprintId('');
+            }}
+            className="border border-gray-300 rounded px-3 py-2 w-full mb-4"
           >
-            <option value="">Selecione um sprint</option>
-            {sprints.map(sprint => (
-              <option key={sprint.id} value={sprint.id}>{sprint.name}</option>
+            <option value="">Selecione um cliente</option>
+            {clientes.map(cliente => (
+              <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
             ))}
           </select>
         </div>
 
-        {selectedSprint && (
+        {selectedCliente && (
           <>
             <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-4">Adicionar Atividade</h2>
-              <input
-                type="text"
-                placeholder="Descrição da atividade"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="border border-gray-300 rounded px-3 py-2 w-full"
-              />
-              <button
-                onClick={addTaskToSprint}
-                className="mt-2 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800"
+              <label className="block text-sm font-medium mb-2">Selecionar Sprint</label>
+              <select
+                value={selectedSprintId}
+                onChange={(e) => setSelectedSprintId(e.target.value)}
+                className="border border-gray-300 rounded px-3 py-2 w-full mb-2"
               >
-                Adicionar Atividade
-              </button>
+                <option value="">Sprint Ativa: {sprintAtiva?.name || 'Nenhuma'}</option>
+                {selectedCliente.sprints.map(sprint => (
+                  <option key={sprint.id} value={sprint.id}>
+                    {sprint.name} {sprint.isActive ? '(Ativa)' : ''}
+                  </option>
+                ))}
+              </select>
+              {selectedSprint && !selectedSprint.isActive && (
+                <button
+                  onClick={() => handleActivateSprint(selectedSprint.id)}
+                  className="mt-2 bg-rose-500 text-white px-4 py-2 rounded hover:bg-rose-600"
+                >
+                  Ativar Esta Sprint
+                </button>
+              )}
             </div>
+
+            {selectedSprint && (
+              <>
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold mb-4">Adicionar Atividade</h2>
+                  <input
+                    type="text"
+                    placeholder="Descrição da atividade"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="border border-gray-300 rounded px-3 py-2 w-full"
+                  />
+                  <button
+                    onClick={addTaskToSprint}
+                    className="mt-2 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800"
+                  >
+                    Adicionar Atividade
+                  </button>
+                </div>
 
         {editingTask && (
           <div className="mb-6 p-4 border border-gray-300 rounded">
@@ -146,7 +188,7 @@ export default function TasksPage() {
         )}
 
         <div>
-          <h2 className="text-xl font-semibold mb-4">Atividades do Sprint</h2>
+          <h2 className="text-xl font-semibold mb-4">Atividades do Sprint: {selectedSprint.name}</h2>
           <div className="space-y-4">
             {sprintTasks.map((task) => (
               <div key={task.id} className="border border-gray-300 rounded p-4">
@@ -220,6 +262,8 @@ export default function TasksPage() {
             ))}
           </div>
         </div>
+              </>
+            )}
           </>
         )}
       </div>
