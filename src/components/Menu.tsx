@@ -9,7 +9,7 @@ type ViewportMode = 'desktop' | 'tablet' | 'mobile';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
-  { href: '/clients', label: 'Clientes', icon: '👥' },
+  // { href: '/clients', label: 'Clientes', icon: '👥' },
   { href: '/sprint', label: 'Sprints', icon: '🏃‍♂️' },
 ];
 
