@@ -5,7 +5,7 @@ import { useScrum, Cliente } from '@/context/ScrumContext';
 import Link from 'next/link';
 
 export default function ClientsPage() {
-  const { clientes, addCliente, updateCliente, deleteCliente } = useScrum();
+  const { clientes, addCliente, updateCliente, deleteCliente, getSprintsByCliente } = useScrum();
   const [nome, setNome] = useState('');
   const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
   const [editingNome, setEditingNome] = useState('');
@@ -113,8 +113,8 @@ export default function ClientsPage() {
                           </button>
                         </div>
                       </div>
-                      <p>Sprints: {cliente.sprints.length}</p>
-                      <p>Sprint Ativa: {cliente.sprintAtiva ? cliente.sprints.find(s => s.id === cliente.sprintAtiva)?.name : 'Nenhuma'}</p>
+                      <p>Sprints: {getSprintsByCliente(cliente.id).length}</p>
+                      <p>Sprint Ativa: {cliente.sprintAtiva ? getSprintsByCliente(cliente.id).find(s => s.id === cliente.sprintAtiva)?.name : 'Nenhuma'}</p>
                       <div className="mt-2">
                         <Link
                           href={`/sprint?clienteId=${cliente.id}`}

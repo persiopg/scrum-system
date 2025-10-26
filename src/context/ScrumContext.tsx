@@ -75,6 +75,29 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
         if (data.clientes) setClientes(data.clientes);
         if (data.sprints) setSprints(data.sprints);
         if (data.tasks) setTasks(data.tasks);
+
+        // Corrigir dados: definir sprintAtiva e garantir apenas uma ativa por cliente
+        setTimeout(() => {
+          if (data.sprints && data.clientes) {
+            const correctedClientes = data.clientes.map((cliente: Cliente) => {
+              const activeSprints = data.sprints.filter((s: Sprint) => s.clienteId === cliente.id && s.isActive);
+              if (activeSprints.length > 0 && !cliente.sprintAtiva) {
+                return { ...cliente, sprintAtiva: activeSprints[0].id };
+              }
+              return cliente;
+            });
+            setClientes(correctedClientes);
+
+            const correctedSprints = data.sprints.map((sprint: Sprint) => {
+              const activeSprints = data.sprints.filter((s: Sprint) => s.clienteId === sprint.clienteId && s.isActive);
+              if (activeSprints.length > 1 && sprint.id !== activeSprints[0].id && sprint.isActive) {
+                return { ...sprint, isActive: false };
+              }
+              return sprint;
+            });
+            setSprints(correctedSprints);
+          }
+        }, 0);
       })
       .catch(err => console.error('Failed to load data:', err));
   }, []);
@@ -118,7 +141,19 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
   };
 
   const moveSprintToCliente = (sprintId: string, newClienteId: string) => {
-    setSprints(sprints.map(sprint => sprint.id === sprintId ? { ...sprint, clienteId: newClienteId } : sprint));
+    const sprint = sprints.find(s => s.id === sprintId);
+    if (!sprint) return;
+
+    // Se a sprint era ativa no cliente antigo, desativar
+    if (sprint.isActive) {
+      setClientes(clientes.map(cliente =>
+        cliente.id === sprint.clienteId
+          ? { ...cliente, sprintAtiva: undefined }
+          : cliente
+      ));
+    }
+
+    setSprints(sprints.map(s => s.id === sprintId ? { ...s, clienteId: newClienteId, isActive: false } : s));
   };
 
   const deleteSprint = (sprintId: string) => {

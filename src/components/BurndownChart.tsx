@@ -14,6 +14,7 @@ interface BurndownChartProps {
 }
 
 export function BurndownChart({ data }: BurndownChartProps) {
+  console.log('BurndownChart data:', data);
   return (
     <div className="w-full h-96">
       <ResponsiveContainer width="100%" height="100%">

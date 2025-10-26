@@ -14,26 +14,38 @@ export default function DashboardPage() {
 
   const selectedCliente = selectedClienteId ? getClienteById(selectedClienteId) : null;
   const sprintsCliente = selectedClienteId ? getSprintsByCliente(selectedClienteId) : [];
-  const sprintAtiva = selectedCliente?.sprintAtiva ? sprintsCliente.find(s => s.id === selectedCliente.sprintAtiva) : null;
+  const sprintAtiva = selectedCliente?.sprintAtiva ? sprintsCliente.find(s => s.id === selectedCliente.sprintAtiva && s.isActive) : null;
   const tasks = sprintAtiva ? getTasksBySprint(sprintAtiva.id) : [];
 
   const generateChartData = () => {
-    if (!sprintAtiva) return [];
+    if (!sprintAtiva) {
+      console.log('No sprintAtiva');
+      return [];
+    }
 
     const start = new Date(sprintAtiva.startDate);
     const end = new Date(sprintAtiva.endDate);
     const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
+    console.log('Dates:', { start: start.toISOString(), end: end.toISOString(), days });
+
+    if (days <= 0) {
+      console.log('Invalid days');
+      return [];
+    }
+
     const data = [];
-    const totalTasks = sprintAtiva.totalTasks;
+    const totalTasks = tasks.length;
     let actualRemaining = totalTasks;
+
+    console.log('Generating chart data:', { sprintAtiva, tasks, totalTasks, days });
 
     for (let i = 0; i < days; i++) {
       const date = new Date(start);
       date.setDate(start.getDate() + i);
       const dayStr = date.toISOString().split('T')[0];
 
-      const expectedRemaining = totalTasks - (totalTasks / (days - 1)) * i;
+      const expectedRemaining = totalTasks - (totalTasks / Math.max(1, days - 1)) * i;
 
       // Subtract completed tasks up to this day
       const completedUpToDay = tasks.filter(task => 
@@ -48,6 +60,7 @@ export default function DashboardPage() {
       });
     }
 
+    console.log('Chart data:', data);
     return data;
   };
 
@@ -139,7 +152,10 @@ export default function DashboardPage() {
                   {chartData.length > 0 ? (
                     <BurndownChart data={chartData} />
                   ) : (
-                    <p>Configure um sprint para ver o gráfico.</p>
+                    <div>
+                      <p>Configure um sprint com tarefas para ver o gráfico.</p>
+                      <p>Debug: sprintAtiva={!!sprintAtiva}, tasks={tasks.length}, chartData={chartData.length}</p>
+                    </div>
                   )}
                 </div>
 
@@ -149,7 +165,7 @@ export default function DashboardPage() {
 
                 <div>
                   <h2 className="text-xl font-semibold mb-4">Resumo da Sprint Ativa</h2>
-                  <p>Total de Tarefas: {sprintAtiva.totalTasks}</p>
+                  <p>Total de Tarefas: {tasks.length}</p>
                   <p>Tarefas Concluídas: {tasks.filter(t => t.status === 'completed').length}</p>
                   <p>Tarefas em Andamento: {tasks.filter(t => t.status === 'in-progress').length}</p>
                   <p>Tarefas Pendentes: {tasks.filter(t => t.status === 'pending').length}</p>
