@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 
 export interface Sprint {
   id: string;
@@ -31,23 +31,24 @@ export interface Cliente {
 interface ScrumContextType {
   clientes: Cliente[];
   sprints: Sprint[];
-  addCliente: (cliente: Omit<Cliente, 'id'>) => Cliente;
+  addCliente: (cliente: Omit<Cliente, 'id'>) => Promise<Cliente>;
   updateCliente: (id: string, updates: Partial<Cliente>) => void;
   deleteCliente: (id: string) => void;
-  addSprint: (sprint: Omit<Sprint, 'id'>) => Sprint;
+  addSprint: (sprint: Omit<Sprint, 'id'>) => Promise<Sprint>;
   updateSprint: (sprintId: string, updates: Partial<Sprint>) => void;
   moveSprintToCliente: (sprintId: string, newClienteId: string) => void;
   deleteSprint: (sprintId: string) => void;
-  setSprintAtiva: (clienteId: string, sprintId: string) => void;
+  setSprintAtiva: (clienteId: string, sprintId: string) => Promise<void>;
   getClienteById: (id: string) => Cliente | undefined;
   getSprintsByCliente: (clienteId: string) => Sprint[];
   getTasksBySprint: (sprintId: string) => Task[];
   addTask: (task: Omit<Task, 'id'>) => void;
-  addTasks: (tasks: Omit<Task, 'id'>[]) => void;
+  addTasks: (tasks: Omit<Task, 'id'>[]) => Promise<void>;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
   exportData: () => { clientes: Cliente[], sprints: Sprint[], tasks: Task[] };
   importData: (data: { clientes: Cliente[], sprints: Sprint[], tasks: Task[] }) => void;
+  saveData: () => Promise<void>;
 }
 
 const ScrumContext = createContext<ScrumContextType | undefined>(undefined);
@@ -56,6 +57,23 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [sprints, setSprints] = useState<Sprint[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  const clientesRef = useRef(clientes);
+  const sprintsRef = useRef(sprints);
+  const tasksRef = useRef(tasks);
+
+  useEffect(() => {
+    clientesRef.current = clientes;
+  }, [clientes]);
+
+  useEffect(() => {
+    sprintsRef.current = sprints;
+  }, [sprints]);
+
+  useEffect(() => {
+    tasksRef.current = tasks;
+  }, [tasks]);
 
   // Função para gerar ID único usando crypto.randomUUID se disponível, senão timestamp + contador
   let idCounter = 0;
@@ -96,22 +114,28 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
           });
           setSprints(correctedSprints);
         }
+        setIsLoaded(true);
       })
       .catch(err => console.error('Failed to load data:', err));
   }, []);
 
   // Save to API whenever state changes
   useEffect(() => {
+    if (!isLoaded) return;
+    console.log('Saving with sprints:', sprintsRef.current);
     fetch('/api/data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clientes, sprints, tasks }),
+      body: JSON.stringify({ clientes: clientesRef.current, sprints: sprintsRef.current, tasks: tasksRef.current }),
     }).catch(err => console.error('Failed to save data:', err));
-  }, [clientes, sprints, tasks]);
+  }, [clientes, sprints, tasks, isLoaded]);
 
-  const addCliente = (cliente: Omit<Cliente, 'id'>) => {
+  const addCliente = async (cliente: Omit<Cliente, 'id'>) => {
     const newCliente: Cliente = { ...cliente, id: generateId() };
-    setClientes([...clientes, newCliente]);
+    const newClientes = [...clientesRef.current, newCliente];
+    clientesRef.current = newClientes;
+    setClientes(newClientes);
+    await saveData();
     return newCliente;
   };
 
@@ -128,9 +152,13 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
     setTasks(tasks.filter(task => !sprintIds.includes(task.sprintId)));
   };
 
-  const addSprint = (sprint: Omit<Sprint, 'id'>) => {
+  const addSprint = async (sprint: Omit<Sprint, 'id'>) => {
     const newSprint: Sprint = { ...sprint, id: generateId() };
-    setSprints([...sprints, newSprint]);
+    console.log('Adding sprint:', newSprint);
+    const newSprints = [...sprintsRef.current, newSprint];
+    sprintsRef.current = newSprints;
+    setSprints(newSprints);
+    await saveData();
     return newSprint;
   };
 
@@ -160,17 +188,22 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
     setTasks(tasks.filter(task => task.sprintId !== sprintId));
   };
 
-  const setSprintAtiva = (clienteId: string, sprintId: string) => {
-    setClientes(clientes.map(cliente =>
+  const setSprintAtiva = async (clienteId: string, sprintId: string) => {
+    const newClientes = clientesRef.current.map(cliente =>
       cliente.id === clienteId
         ? { ...cliente, sprintAtiva: sprintId }
         : cliente
-    ));
-    setSprints(sprints.map(sprint =>
+    );
+    clientesRef.current = newClientes;
+    setClientes(newClientes);
+    const newSprints = sprintsRef.current.map(sprint =>
       sprint.clienteId === clienteId
         ? { ...sprint, isActive: sprint.id === sprintId }
         : sprint
-    ));
+    );
+    sprintsRef.current = newSprints;
+    setSprints(newSprints);
+    await saveData();
   };
 
   const getClienteById = (id: string) => {
@@ -187,9 +220,12 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
   };
 
   // Função para adicionar múltiplas tarefas de uma vez
-  const addTasks = (tasksToAdd: Omit<Task, 'id'>[]) => {
+  const addTasks = async (tasksToAdd: Omit<Task, 'id'>[]) => {
     const newTasks = tasksToAdd.map(task => ({ ...task, id: generateId() }));
-    setTasks(prevTasks => [...prevTasks, ...newTasks]);
+    const newTasksArray = [...tasksRef.current, ...newTasks];
+    tasksRef.current = newTasksArray;
+    setTasks(newTasksArray);
+    await saveData();
   };
 
   const updateTask = (id: string, updates: Partial<Task>) => {
@@ -214,6 +250,18 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
     setTasks(data.tasks);
   };
 
+  const saveData = async () => {
+    try {
+      await fetch('/api/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientes: clientesRef.current, sprints: sprintsRef.current, tasks: tasksRef.current }),
+      });
+    } catch (err) {
+      console.error('Failed to save data:', err);
+    }
+  };
+
   return (
     <ScrumContext.Provider value={{
       clientes,
@@ -235,6 +283,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
       deleteTask,
       exportData,
       importData,
+      saveData,
     }}>
       {children}
     </ScrumContext.Provider>

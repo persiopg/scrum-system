@@ -9,9 +9,9 @@ export default function CreateClientPage() {
   const router = useRouter();
   const [nome, setNome] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    addCliente({ nome });
+    await addCliente({ nome });
     router.push('/clients');
   };
 

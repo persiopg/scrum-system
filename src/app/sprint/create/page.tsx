@@ -33,7 +33,7 @@ export default function CreateSprintPage() {
     setTasks(tasks.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Form submitted');
     console.log('Selected cliente:', selectedCliente);
@@ -46,7 +46,7 @@ export default function CreateSprintPage() {
       }
 
       // Criar nova sprint
-      const sprint = addSprint({ clienteId: selectedCliente.id, name, startDate, endDate, totalTasks: tasks.filter(t => t.trim()).length, isActive: ativarSprint });
+      const sprint = await addSprint({ clienteId: selectedCliente.id, name, startDate, endDate, totalTasks: tasks.filter(t => t.trim()).length, isActive: ativarSprint });
       console.log('Sprint created:', sprint);
 
       // Adicionar tarefas ao sprint em lote
@@ -57,12 +57,12 @@ export default function CreateSprintPage() {
       console.log('Tasks to add:', tasksToAdd);
 
       if (tasksToAdd.length > 0) {
-        addTasks(tasksToAdd);
+        await addTasks(tasksToAdd);
       }
 
       // Se ativar sprint, definir como ativa no cliente
       if (ativarSprint) {
-        setSprintAtiva(selectedCliente.id, sprint.id);
+        await setSprintAtiva(selectedCliente.id, sprint.id);
       }
 
       router.push('/sprint');
@@ -108,7 +108,6 @@ export default function CreateSprintPage() {
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 className="w-full border border-gray-300 rounded px-3 py-2"
-                required
               />
             </div>
             <div>
@@ -118,7 +117,6 @@ export default function CreateSprintPage() {
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 className="w-full border border-gray-300 rounded px-3 py-2"
-                required
               />
             </div>
 
