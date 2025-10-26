@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+  "test:utils": "node scripts/testTaskUtils.js",
     "lint": "eslint"
   },
   "dependencies": {
@@ -22,6 +23,14 @@
     "eslint": "^9",
     "eslint-config-next": "16.0.0",
     "tailwindcss": "^4",
+    "ts-node": "^10",
     "typescript": "^5"
+  }
+  ,
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "commonjs"
+    }
   }
 }

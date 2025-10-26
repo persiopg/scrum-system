@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function SprintTasksPage() {
-  const { sprints, getTasksBySprint, updateTask, deleteTask } = useScrum();
+  const { sprints, getTasksBySprint, deleteTask } = useScrum();
   const router = useRouter();
   const params = useParams();
   const sprintId = params.sprintId as string;
@@ -17,21 +17,7 @@ export default function SprintTasksPage() {
     return <div>Sprint não encontrada</div>;
   }
 
-  const handleStatusChange = (taskId: string, newStatus: 'pending' | 'in-progress' | 'completed') => {
-    updateTask(taskId, { status: newStatus });
-  };
-
-  const handleAssigneeChange = (taskId: string, assignee: string) => {
-    updateTask(taskId, { assignee });
-  };
-
-  const handleDateChange = (taskId: string, date: string) => {
-    updateTask(taskId, { date });
-  };
-
-  const handleTimeSpentChange = (taskId: string, timeSpent: number) => {
-    updateTask(taskId, { timeSpent });
-  };
+  // Editing is done on a separate page; handlers for inline edits removed.
 
   const handleDelete = (taskId: string) => {
     if (confirm('Tem certeza que deseja excluir esta atividade?')) {
@@ -87,58 +73,17 @@ export default function SprintTasksPage() {
                 {tasks.map((task) => (
                   <tr key={task.id} className="hover:bg-gray-50">
                     <td className="border border-gray-300 px-4 py-2">{task.description}</td>
+                    <td className="border border-gray-300 px-4 py-2">{task.status}</td>
+                    <td className="border border-gray-300 px-4 py-2">{task.date || '-'}</td>
+                    <td className="border border-gray-300 px-4 py-2">{task.timeSpent ? `${task.timeSpent}h` : '-'}</td>
+                    <td className="border border-gray-300 px-4 py-2">{task.assignee || '-'}</td>
                     <td className="border border-gray-300 px-4 py-2">
-                      <select
-                        value={task.status}
-                        onChange={(e) => handleStatusChange(task.id, e.target.value as 'pending' | 'in-progress' | 'completed')}
-                        className="border border-gray-300 rounded px-2 py-1 text-sm"
+                      <button
+                        onClick={() => router.push(`/sprint/${sprintId}/tasks/${task.id}`)}
+                        className="bg-purple-600 text-white px-2 py-1 rounded text-sm hover:bg-purple-800 mr-2"
                       >
-                        <option value="pending">Pendente</option>
-                        <option value="in-progress">Em Andamento</option>
-                        <option value="completed">Concluída</option>
-                      </select>
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {task.status === 'completed' ? (
-                        <input
-                          type="date"
-                          value={task.date || ''}
-                          onChange={(e) => handleDateChange(task.id, e.target.value)}
-                          className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                        />
-                      ) : (
-                        task.date || '-'
-                      )}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {task.status === 'completed' ? (
-                        <input
-                          type="number"
-                          value={task.timeSpent || ''}
-                          onChange={(e) => handleTimeSpentChange(task.id, Number(e.target.value))}
-                          className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                          min="0"
-                          step="0.5"
-                          placeholder="horas"
-                        />
-                      ) : (
-                        task.timeSpent ? `${task.timeSpent}h` : '-'
-                      )}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {task.status === 'completed' ? (
-                        <input
-                          type="text"
-                          value={task.assignee || ''}
-                          onChange={(e) => handleAssigneeChange(task.id, e.target.value)}
-                          className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                          placeholder="Quem fez?"
-                        />
-                      ) : (
-                        task.assignee || '-'
-                      )}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
+                        Editar
+                      </button>
                       <button
                         onClick={() => handleDelete(task.id)}
                         className="bg-red-600 text-white px-2 py-1 rounded text-sm hover:bg-red-700"
