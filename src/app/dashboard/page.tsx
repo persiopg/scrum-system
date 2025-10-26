@@ -133,84 +133,77 @@ function DashboardContent() {
   };
 
   return (
-    <div className="p-8">
-      <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-6">Dashboard Scrum</h1>
-
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4">Backup e Restauração</h2>
-          <button
-            onClick={handleExport}
-            className="bg-rose-500 text-white px-4 py-2 rounded hover:bg-rose-500 mr-4"
-          >
-            Exportar Dados (JSON)
-          </button>
-          <label className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800 cursor-pointer">
-            Importar Dados (JSON)
-            <input
-              type="file"
-              accept=".json"
-              onChange={handleImport}
-              className="hidden"
-            />
-          </label>
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">Selecionar Cliente</label>
-          <select
-            value={selectedClienteId}
-            onChange={(e) => setSelectedClienteId(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 w-full mb-4"
-          >
-            <option value="">Selecione um cliente</option>
-            {clientes.map(cliente => (
-              <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
-            ))}
-          </select>
-          <Link href="/clients" className="text-purple-600 hover:underline">Gerenciar Clientes</Link>
-        </div>
-
-        {selectedCliente && (
-          <>
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-4">Cliente: {selectedCliente.nome}</h2>
-              {sprintAtiva ? (
-                <p>Sprint Ativa: {sprintAtiva.name}</p>
-              ) : (
-                <p>Nenhuma sprint ativa. <Link href={`/sprint?clienteId=${selectedCliente.id}`} className="text-purple-600 hover:underline">Criar uma sprint</Link></p>
-              )}
+    <div className="p-6">
+      <div className="max-w-6xl mx-auto">
+         
+        <div className="card">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-4">Backup e Restauração</h2>
+            <div className="flex gap-3">
+              <button onClick={handleExport} style={{background: 'linear-gradient(90deg, #ec4899 0%, #fb923c 100%)'}} className="px-4 py-2 rounded text-white">Exportar Dados (JSON)</button>
+              <label className="px-4 py-2 rounded bg-[rgba(255,255,255,0.03)] cursor-pointer">
+                Importar Dados (JSON)
+                <input type="file" accept=".json" onChange={handleImport} className="hidden" />
+              </label>
             </div>
+          </div>
 
-            {sprintAtiva && (
-              <>
-                <div className="mb-6">
-                  <h2 className="text-xl font-semibold mb-4">Gráfico de Burndown</h2>
-                  {chartData.length > 0 ? (
-                    <BurndownChart data={chartData} />
-                  ) : (
-                    <div>
-                      <p>Configure um sprint com tarefas para ver o gráfico.</p>
-                      <p>Debug: sprintAtiva={!!sprintAtiva}, tasks={tasks.length}, chartData={chartData.length}</p>
-                    </div>
-                  )}
-                </div>
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2">Selecionar Cliente</label>
+            <select
+              value={selectedClienteId}
+              onChange={(e) => setSelectedClienteId(e.target.value)}
+              className="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded px-3 py-2 mb-4"
+            >
+              <option value="">Selecione um cliente</option>
+              {clientes.map(cliente => (
+                <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
+              ))}
+            </select>
+            <Link href="/clients" className="text-blue-300 hover:underline">Gerenciar Clientes</Link>
+          </div>
 
-                <div className="mb-6">
-                  <Link href={`/sprint/${sprintAtiva.id}/tasks`} className="text-purple-600 hover:underline">Gerenciar Tarefas da Sprint Ativa</Link>
-                </div>
+          {selectedCliente && (
+            <>
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold mb-4">Cliente: {selectedCliente.nome}</h2>
+                {sprintAtiva ? (
+                  <p>Sprint Ativa: {sprintAtiva.name}</p>
+                ) : (
+                  <p>Nenhuma sprint ativa. <Link href={`/sprint?clienteId=${selectedCliente.id}`} className="text-blue-300 hover:underline">Criar uma sprint</Link></p>
+                )}
+              </div>
 
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">Resumo da Sprint Ativa</h2>
-                  <p>Total de Tarefas: {tasks.length}</p>
-                  <p>Tarefas Concluídas: {tasks.filter(t => t.status === 'completed').length}</p>
-                  <p>Tarefas em Andamento: {tasks.filter(t => t.status === 'in-progress').length}</p>
-                  <p>Tarefas Pendentes: {tasks.filter(t => t.status === 'pending').length}</p>
-                </div>
-              </>
-            )}
-          </>
-        )}
+              {sprintAtiva && (
+                <>
+                  <div className="mb-6">
+                    <h2 className="text-xl font-semibold mb-4">Gráfico de Burndown</h2>
+                    {chartData.length > 0 ? (
+                      <BurndownChart data={chartData} />
+                    ) : (
+                      <div>
+                        <p>Configure um sprint com tarefas para ver o gráfico.</p>
+                        <p className="muted">Debug: sprintAtiva={!!sprintAtiva}, tasks={tasks.length}, chartData={chartData.length}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mb-6">
+                    <Link href={`/sprint/${sprintAtiva.id}/tasks`} className="text-blue-300 hover:underline">Gerenciar Tarefas da Sprint Ativa</Link>
+                  </div>
+
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Resumo da Sprint Ativa</h2>
+                    <p>Total de Tarefas: {tasks.length}</p>
+                    <p>Tarefas Concluídas: {tasks.filter(t => t.status === 'completed').length}</p>
+                    <p>Tarefas em Andamento: {tasks.filter(t => t.status === 'in-progress').length}</p>
+                    <p>Tarefas Pendentes: {tasks.filter(t => t.status === 'pending').length}</p>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

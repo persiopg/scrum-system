@@ -30,8 +30,19 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ScrumProvider>
-          <Menu />
-          {children}
+          <div className="app-shell">
+            <Menu />
+
+            <div className="main-layout">
+              <header className="topbar">
+                <div className="flex-1 w-full">
+                  <input className="search-input" placeholder="Search Files" />
+                </div> 
+              </header>
+
+              <main className="main-content">{children}</main>
+            </div>
+          </div>
         </ScrumProvider>
       </body>
     </html>

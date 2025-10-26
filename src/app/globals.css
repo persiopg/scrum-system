@@ -1,38 +1,93 @@
 @import "tailwindcss";
 
-:root {
-  --background: #FBE4D8;
-  --foreground: #190019;
-  --color-purple-900: #190019;
-  --color-purple-800: #2B124C;
-  --color-purple-600: #522B5B;
-  --color-rose-500: #854F6C;
-  --color-pink-300: #DFB6B2;
-  --color-cream-100: #FBE4D8;
+:root{
+  /* dark theme base colors inspired by the provided design */
+  --bg-900: #0b1220; /* page background */
+  --sidebar: #0f1724;
+  --panel: rgba(255,255,255,0.03);
+  --muted: rgba(255,255,255,0.6);
+  --accent-1: linear-gradient(135deg,#2b2450 0%,#0f567a 100%);
+  --accent-2: linear-gradient(135deg,#15324a 0%,#3b2a6d 100%);
+  --glass-border: rgba(255,255,255,0.04);
+  --card-radius: 12px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-purple-900: var(--color-purple-900);
-  --color-purple-800: var(--color-purple-800);
-  --color-purple-600: var(--color-purple-600);
-  --color-rose-500: var(--color-rose-500);
-  --color-pink-300: var(--color-pink-300);
-  --color-cream-100: var(--color-cream-100);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* App shell helpers */
+.app-shell{
+  min-height:100vh;
+  background: radial-gradient(1000px 600px at 10% 10%, rgba(59,41,109,0.15), transparent 10%), var(--bg-900);
+  color: #e6eef8;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #190019;
-    --foreground: #FBE4D8;
+.sidebar{
+  background: var(--sidebar);
+  box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+  border-radius: 14px;
+  width: var(--sidebar-width, 18rem);
+  transition: width 180ms ease, padding 180ms ease;
+  overflow: hidden;
+}
+
+.main-layout{
+  margin-left: var(--sidebar-width, 18rem); /* leave space for the sidebar */
+  padding: 2.25rem; /* 36px */
+  transition: margin-left 200ms ease;
+}
+
+/* collapsed state for sidebar */
+.sidebar.collapsed{
+  width: 4.5rem; /* compact width */
+  padding: 0.75rem;
+}
+
+/* hide labels when collapsed */
+.sidebar.collapsed .nav-label{display:none}
+.sidebar.collapsed .muted{display:none}
+.sidebar.collapsed .doc-icons{gap:0.5rem}
+.sidebar .toggle-btn{display:none}
+
+@media (max-width: 1024px){
+  .sidebar{ /* on smaller screens we want it to be compact by default */
+    --sidebar-width: 4.5rem;
   }
+  .sidebar .toggle-btn{display:inline-flex}
+  .main-layout{margin-left:var(--sidebar-width,4.5rem)}
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.25rem;
 }
+
+.search-input{
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.04);
+  padding: 10px 14px;border-radius:10px;color:var(--muted);width:100%;max-width:640px;
+}
+
+.rightbar{
+  background: transparent; /* reserved area for right column */
+}
+
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--card-radius);
+  padding: 1rem;
+  box-shadow: 0 6px 20px rgba(3,6,23,0.5);
+}
+
+.card-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+
+.doc-icons{display:flex;gap:0.75rem}
+
+/* small helpers used in components */
+.muted{color:var(--muted)}
+.rounded-lg{border-radius:var(--card-radius)}
+
+body{font-family:var(--font-sans,Inter),-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:transparent}
+
+/* responsive tweaks */
+@media (max-width: 1024px){
+  .main-layout{margin-left:4rem;padding:1rem}
+}
+
