@@ -3,6 +3,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { BurndownChart } from '@/components/BurndownChart';
+import { TaskStatusChart } from '@/components/TaskStatusChart';
 import { useScrum } from '@/context/ScrumContext';
 
 function DashboardContent() {
@@ -180,10 +181,13 @@ function DashboardContent() {
 
                   <div>
                     <h2 className="text-xl font-semibold mb-4">Resumo da Sprint Ativa</h2>
-                    <p>Total de Tarefas: {tasks.length}</p>
-                    <p>Tarefas Concluídas: {tasks.filter(t => t.status === 'completed').length}</p>
-                    <p>Tarefas em Andamento: {tasks.filter(t => t.status === 'in-progress').length}</p>
-                    <p>Tarefas Pendentes: {tasks.filter(t => t.status === 'pending').length}</p>
+                    <TaskStatusChart tasks={tasks} />
+                    <div className="mt-4 text-sm text-gray-400">
+                      <p>Total de Tarefas: {tasks.length}</p>
+                      <p>Tarefas Concluídas: {tasks.filter(t => t.status === 'completed').length}</p>
+                      <p>Tarefas em Andamento: {tasks.filter(t => t.status === 'in-progress').length}</p>
+                      <p>Tarefas Pendentes: {tasks.filter(t => t.status === 'pending').length}</p>
+                    </div>
                   </div>
                 </>
               )}
