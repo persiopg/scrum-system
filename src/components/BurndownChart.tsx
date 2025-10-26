@@ -14,18 +14,48 @@ interface BurndownChartProps {
 }
 
 export function BurndownChart({ data }: BurndownChartProps) {
-  console.log('BurndownChart data:', data);
+  console.log('BurndownChart received data:', data);
+
+  if (!data || data.length === 0) {
+    return <div className="w-full h-96 flex items-center justify-center text-gray-500">Nenhum dado disponível para o gráfico</div>;
+  }
+
   return (
     <div className="w-full h-96">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="day" />
+          <XAxis
+            dataKey="day"
+            tick={{ fontSize: 12 }}
+            angle={-45}
+            textAnchor="end"
+            height={60}
+          />
           <YAxis />
-          <Tooltip />
+          <Tooltip
+            formatter={(value: number, name: string) => [
+              typeof value === 'number' ? value.toFixed(1) : value,
+              name === 'expected' ? 'Expectativa' : 'Real'
+            ]}
+          />
           <Legend />
-          <Line type="monotone" dataKey="expected" stroke="#2B124C" name="Expectativa" />
-          <Line type="monotone" dataKey="actual" stroke="#854F6C" name="Real" />
+          <Line
+            type="monotone"
+            dataKey="expected"
+            stroke="#2B124C"
+            name="Expectativa"
+            strokeWidth={2}
+            dot={{ r: 3 }}
+          />
+          <Line
+            type="monotone"
+            dataKey="actual"
+            stroke="#854F6C"
+            name="Real"
+            strokeWidth={2}
+            dot={{ r: 3 }}
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>

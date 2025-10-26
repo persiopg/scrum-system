@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { BurndownChart } from '@/components/BurndownChart';
 import { useScrum } from '@/context/ScrumContext';
 
-export default function DashboardPage() {
+function DashboardContent() {
   const { clientes, getClienteById, getSprintsByCliente, getTasksBySprint, exportData, importData } = useScrum();
   const searchParams = useSearchParams();
   const clienteId = searchParams.get('clienteId');
@@ -23,48 +23,73 @@ export default function DashboardPage() {
       return [];
     }
 
-    const start = new Date(sprintAtiva.startDate);
-    const end = new Date(sprintAtiva.endDate);
-    const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-
-    console.log('Dates:', { start: start.toISOString(), end: end.toISOString(), days });
-
-    if (days <= 0) {
-      console.log('Invalid days');
+    if (!tasks || tasks.length === 0) {
+      console.log('No tasks available');
       return [];
     }
 
-    const data = [];
-    const totalTasks = tasks.length;
-    let actualRemaining = totalTasks;
+    try {
+      const start = new Date(sprintAtiva.startDate);
+      const end = new Date(sprintAtiva.endDate);
 
-    console.log('Generating chart data:', { sprintAtiva, tasks, totalTasks, days });
+      // Validação das datas
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        console.log('Invalid dates:', { startDate: sprintAtiva.startDate, endDate: sprintAtiva.endDate });
+        return [];
+      }
 
-    for (let i = 0; i < days; i++) {
-      const date = new Date(start);
-      date.setDate(start.getDate() + i);
-      const dayStr = date.toISOString().split('T')[0];
+      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-      const expectedRemaining = totalTasks - (totalTasks / Math.max(1, days - 1)) * i;
-
-      // Subtract completed tasks up to this day
-      const completedUpToDay = tasks.filter(task => 
-        task.status === 'completed' && task.date && new Date(task.date) <= date
-      ).length;
-      actualRemaining = totalTasks - completedUpToDay;
-
-      data.push({
-        day: dayStr,
-        expected: Math.max(0, expectedRemaining),
-        actual: Math.max(0, actualRemaining),
+      console.log('Dates:', {
+        start: start.toISOString(),
+        end: end.toISOString(),
+        days,
+        startDate: sprintAtiva.startDate,
+        endDate: sprintAtiva.endDate
       });
+
+      if (days <= 0 || days > 365) {
+        console.log('Invalid days range:', days);
+        return [];
+      }
+
+      const data = [];
+      const totalTasks = tasks.length;
+
+      console.log('Generating chart data:', { sprintAtiva, tasksCount: tasks.length, totalTasks, days });
+
+      for (let i = 0; i < days; i++) {
+        const date = new Date(start);
+        date.setDate(start.getDate() + i);
+        const dayStr = date.toISOString().split('T')[0];
+
+        // Cálculo da linha ideal (expectativa)
+        const progressRatio = i / Math.max(1, days - 1);
+        const expectedRemaining = totalTasks * (1 - progressRatio);
+
+        // Cálculo da linha real baseada nas tarefas concluídas até esta data
+        const completedUpToDay = tasks.filter(task => {
+          if (task.status !== 'completed' || !task.date) return false;
+          const taskDate = new Date(task.date);
+          return taskDate <= date;
+        }).length;
+
+        const actualRemaining = totalTasks - completedUpToDay;
+
+        data.push({
+          day: dayStr,
+          expected: Math.max(0, Math.round(expectedRemaining * 100) / 100),
+          actual: Math.max(0, actualRemaining),
+        });
+      }
+
+      console.log('Generated chart data:', data);
+      return data;
+    } catch (error) {
+      console.error('Error generating chart data:', error);
+      return [];
     }
-
-    console.log('Chart data:', data);
-    return data;
-  };
-
-  const chartData = generateChartData();
+  };  const chartData = generateChartData();
 
   const handleExport = () => {
     const data = exportData();
@@ -160,7 +185,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="mb-6">
-                  <Link href={`/tasks?clienteId=${selectedCliente.id}`} className="text-purple-600 hover:underline">Gerenciar Tarefas da Sprint Ativa</Link>
+                  <Link href={`/sprint/${sprintAtiva.id}/tasks`} className="text-purple-600 hover:underline">Gerenciar Tarefas da Sprint Ativa</Link>
                 </div>
 
                 <div>
@@ -176,5 +201,13 @@ export default function DashboardPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="p-8"><div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md"><p>Carregando...</p></div></div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
