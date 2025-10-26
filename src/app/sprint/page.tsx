@@ -59,7 +59,8 @@ export default function SprintPage() {
                     <td className="border border-gray-300 px-4 py-2">{sprint.isActive ? 'Ativa' : 'Inativa'}</td>
                     <td className="border border-gray-300 px-4 py-2">
                       <button onClick={() => handleEdit(sprint.id)} className="bg-blue-600 text-white px-2 py-1 rounded mr-2 text-sm">Editar</button>
-                      <button onClick={() => handleDelete(sprint.id)} className="bg-red-600 text-white px-2 py-1 rounded text-sm">Excluir</button>
+                      <button onClick={() => handleDelete(sprint.id)} className="bg-red-600 text-white px-2 py-1 rounded mr-2 text-sm">Excluir</button>
+                      <button onClick={() => router.push(`/sprint/${sprint.id}/tasks`)} className="bg-green-600 text-white px-2 py-1 rounded text-sm">Ver Atividades</button>
                     </td>
                   </tr>
                 );
