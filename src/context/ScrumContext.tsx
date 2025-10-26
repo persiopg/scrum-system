@@ -32,6 +32,8 @@ interface ScrumContextType {
   clientes: Cliente[];
   tasks: Task[];
   sprints: Sprint[];
+  selectedClienteId?: string | null;
+  setSelectedClienteId: (id: string | null) => void;
   addCliente: (cliente: Omit<Cliente, 'id'>) => Promise<Cliente>;
   updateCliente: (id: string, updates: Partial<Cliente>) => void;
   deleteCliente: (id: string) => void;
@@ -59,6 +61,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [sprints, setSprints] = useState<Sprint[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedClienteId, setSelectedClienteId] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const clientesRef = useRef(clientes);
@@ -120,6 +123,20 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
       })
       .catch(err => console.error('Failed to load data:', err));
   }, []);
+
+  // hydrate selectedClienteId from localStorage after data is loaded
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      const stored = typeof window !== 'undefined' ? localStorage.getItem('selectedCliente') : null;
+      if (stored) {
+        const exists = clientes.find(c => c.id === stored);
+        if (exists) setSelectedClienteId(stored);
+      }
+    } catch {
+      // ignore localStorage errors
+    }
+  }, [isLoaded, clientes]);
 
   // Save to API whenever state changes
   useEffect(() => {
@@ -289,6 +306,18 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const _setSelectedClienteId = async (id: string | null) => {
+    setSelectedClienteId(id);
+    try {
+      if (typeof window !== 'undefined') {
+        if (id) localStorage.setItem('selectedCliente', id);
+        else localStorage.removeItem('selectedCliente');
+      }
+    } catch {
+      // ignore storage errors
+    }
+  };
+
   return (
     <ScrumContext.Provider value={{
       clientes,
@@ -313,6 +342,8 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
       exportData,
       importData,
       saveData,
+      selectedClienteId,
+      setSelectedClienteId: _setSelectedClienteId,
     }}>
       {children}
     </ScrumContext.Provider>

@@ -1,16 +1,12 @@
 "use client";
 
-import { useState, Suspense } from 'react';
+import { Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import { BurndownChart } from '@/components/BurndownChart';
 import { useScrum } from '@/context/ScrumContext';
 
 function DashboardContent() {
-  const { clientes, getClienteById, getSprintsByCliente, getTasksBySprint, exportData, importData } = useScrum();
-  const searchParams = useSearchParams();
-  const clienteId = searchParams.get('clienteId');
-  const [selectedClienteId, setSelectedClienteId] = useState<string>(clienteId || '');
+  const { getClienteById, getSprintsByCliente, getTasksBySprint, exportData, importData, selectedClienteId } = useScrum();
 
   const selectedCliente = selectedClienteId ? getClienteById(selectedClienteId) : null;
   const sprintsCliente = selectedClienteId ? getSprintsByCliente(selectedClienteId) : [];
@@ -148,28 +144,18 @@ function DashboardContent() {
             </div>
           </div>
 
-          <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">Selecionar Cliente</label>
-            <select
-              value={selectedClienteId}
-              onChange={(e) => setSelectedClienteId(e.target.value)}
-              className="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded px-3 py-2 mb-4"
-            >
-              <option value="">Selecione um cliente</option>
-              {clientes.map(cliente => (
-                <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
-              ))}
-            </select>
-            <Link href="/clients" className="text-blue-300 hover:underline">Gerenciar Clientes</Link>
-          </div>
+          {/* Client is selected via the sidebar menu; removed duplicate selector from dashboard */}
+          {!selectedClienteId && (
+            <div className="mb-6">
+              <p className="muted">Nenhum cliente selecionado. Use o seletor no menu lateral para escolher um cliente.</p>
+              <Link href="/clients" className="text-blue-300 hover:underline">Gerenciar Clientes</Link>
+            </div>
+          )}
 
           {selectedCliente && (
             <>
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-4">Cliente: {selectedCliente.nome}</h2>
-                {sprintAtiva ? (
-                  <p>Sprint Ativa: {sprintAtiva.name}</p>
-                ) : (
+              <div className="mb-6"> 
+                {sprintAtiva ? "": (
                   <p>Nenhuma sprint ativa. <Link href={`/sprint?clienteId=${selectedCliente.id}`} className="text-blue-300 hover:underline">Criar uma sprint</Link></p>
                 )}
               </div>

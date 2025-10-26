@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useScrum } from '@/context/ScrumContext';
 
 export function Menu() {
   // initialize to false to keep server and initial client render consistent
@@ -70,6 +71,14 @@ export function Menu() {
     document.documentElement.style.setProperty('--sidebar-width', next ? '4.5rem' : '18rem');
   };
 
+  // use global selection from context
+  const { clientes, selectedClienteId, setSelectedClienteId } = useScrum();
+
+  function onSelectChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const id = e.target.value || null;
+    setSelectedClienteId(id);
+  }
+
   return (
     <>
       <aside className={`fixed left-6 top-6 bottom-6 sidebar p-6 flex flex-col justify-between ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'open' : ''}`}>
@@ -78,6 +87,22 @@ export function Menu() {
         </button>
         <div>
           <nav className="flex flex-col gap-3">
+            {/* Client selector placed in the menu */}
+          <div className="mb-6 nav-label">
+            <label className="block text-sm font-medium mb-2">Selecionar Cliente</label>
+            <select
+              className="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded px-3 py-2 mb-4"
+              value={selectedClienteId || ''}
+              onChange={onSelectChange}
+              aria-label="Selecionar cliente"
+            >
+              <option value="">Selecione um cliente</option>
+              {clientes && clientes.map((c) => (
+                <option key={c.id} value={c.id}>{c.nome}</option>
+              ))}
+            </select>
+            <a className="text-blue-300 hover:underline" href="/clients">Gerenciar Clientes</a>
+          </div>
           <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[rgba(255,255,255,0.02)] transition-colors">
             <span className="w-6 h-6 flex items-center justify-center">🏠</span>
             <span className="text-sm nav-label">Dashboard</span>
@@ -93,6 +118,7 @@ export function Menu() {
             <span className="text-sm nav-label">Sprints</span>
           </Link> 
         </nav>
+          
       </div>
     </aside>
 
