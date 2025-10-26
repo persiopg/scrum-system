@@ -5,7 +5,7 @@ import { useScrum } from '@/context/ScrumContext';
 import { useRouter, useParams } from 'next/navigation';
 
 export default function EditTaskPage() {
-  const { getTasksBySprint, updateTask, deleteTask, sprints } = useScrum();
+  const { getTasksBySprint, updateTask, deleteTask, sprints, executores } = useScrum();
   const router = useRouter();
   const params = useParams();
   const sprintId = params.sprintId as string;
@@ -98,12 +98,18 @@ export default function EditTaskPage() {
 
               <div>
                 <label className="block text-sm font-medium mb-1">Responsável</label>
-                <input
-                  type="text"
+                <select
                   value={assignee}
                   onChange={(e) => setAssignee(e.target.value)}
                   className="w-full border border-gray-300 rounded px-3 py-2"
-                />
+                >
+                  <option value="">Selecione um responsável</option>
+                  {executores.map((executor) => (
+                    <option key={executor.id} value={executor.nome}>
+                      {executor.nome} - {executor.cargo}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="flex space-x-2">

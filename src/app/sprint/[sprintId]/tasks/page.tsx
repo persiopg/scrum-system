@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function SprintTasksPage() {
-  const { sprints, getTasksBySprint, deleteTask } = useScrum();
+  const { sprints, getTasksBySprint, deleteTask, executores } = useScrum();
   const router = useRouter();
   const params = useParams();
   const sprintId = params.sprintId as string;
@@ -78,7 +78,12 @@ export default function SprintTasksPage() {
                       </div>
                     </div>
                     <div className="shrink-0 flex items-center gap-4 ml-4">
-                      <p className="text-sm text-gray-500">{task.assignee || 'N/A'}</p>
+                      <p className="text-sm text-gray-500">
+                        {task.assignee ? (() => {
+                          const executor = executores.find(e => e.nome === task.assignee);
+                          return executor ? `${executor.nome} (${executor.cargo})` : task.assignee;
+                        })() : 'N/A'}
+                      </p>
                       <p className="text-sm text-gray-500">{task.timeSpent ? `${task.timeSpent}h` : 'N/A'}</p>
                       <div className="flex gap-2">
                         <button

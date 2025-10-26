@@ -28,8 +28,15 @@ export interface Cliente {
   sprintAtiva?: string; // id da sprint ativa
 }
 
+export interface Executor {
+  id: string;
+  nome: string;
+  cargo: string;
+}
+
 interface ScrumContextType {
   clientes: Cliente[];
+  executores: Executor[];
   tasks: Task[];
   sprints: Sprint[];
   selectedClienteId?: string | null;
@@ -37,6 +44,10 @@ interface ScrumContextType {
   addCliente: (cliente: Omit<Cliente, 'id'>) => Promise<Cliente>;
   updateCliente: (id: string, updates: Partial<Cliente>) => void;
   deleteCliente: (id: string) => void;
+  addExecutor: (executor: Omit<Executor, 'id'>) => Promise<Executor>;
+  updateExecutor: (id: string, updates: Partial<Executor>) => void;
+  deleteExecutor: (id: string) => void;
+  getExecutorById: (id: string) => Executor | undefined;
   addSprint: (sprint: Omit<Sprint, 'id'>) => Promise<Sprint>;
   updateSprint: (sprintId: string, updates: Partial<Sprint>) => void;
   moveSprintToCliente: (sprintId: string, newClienteId: string) => void;
@@ -50,8 +61,8 @@ interface ScrumContextType {
   addTasks: (tasks: Omit<Task, 'id'>[]) => Promise<void>;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
-  exportData: () => { clientes: Cliente[], sprints: Sprint[], tasks: Task[] };
-  importData: (data: { clientes: Cliente[], sprints: Sprint[], tasks: Task[] }) => void;
+  exportData: () => { clientes: Cliente[], executores: Executor[], sprints: Sprint[], tasks: Task[] };
+  importData: (data: { clientes: Cliente[], executores: Executor[], sprints: Sprint[], tasks: Task[] }) => void;
   saveData: () => Promise<void>;
 }
 
@@ -59,18 +70,24 @@ const ScrumContext = createContext<ScrumContextType | undefined>(undefined);
 
 export function ScrumProvider({ children }: { children: ReactNode }) {
   const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [executores, setExecutores] = useState<Executor[]>([]);
   const [sprints, setSprints] = useState<Sprint[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedClienteId, setSelectedClienteId] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const clientesRef = useRef(clientes);
+  const executoresRef = useRef(executores);
   const sprintsRef = useRef(sprints);
   const tasksRef = useRef(tasks);
 
   useEffect(() => {
     clientesRef.current = clientes;
   }, [clientes]);
+
+  useEffect(() => {
+    executoresRef.current = executores;
+  }, [executores]);
 
   useEffect(() => {
     sprintsRef.current = sprints;
@@ -96,6 +113,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
       .then(res => res.json())
       .then(data => {
         if (data.clientes) setClientes(data.clientes);
+        if (data.executores) setExecutores(data.executores);
         if (data.sprints) setSprints(data.sprints);
         if (data.tasks) setTasks(data.tasks);
 
@@ -145,9 +163,9 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
     fetch('/api/data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clientes: clientesRef.current, sprints: sprintsRef.current, tasks: tasksRef.current }),
+      body: JSON.stringify({ clientes: clientesRef.current, executores: executoresRef.current, sprints: sprintsRef.current, tasks: tasksRef.current }),
     }).catch(err => console.error('Failed to save data:', err));
-  }, [clientes, sprints, tasks, isLoaded]);
+  }, [clientes, executores, sprints, tasks, isLoaded]);
 
   const addCliente = async (cliente: Omit<Cliente, 'id'>) => {
     const newCliente: Cliente = { ...cliente, id: generateId() };
@@ -156,6 +174,27 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
     setClientes(newClientes);
     await saveData();
     return newCliente;
+  };
+
+  const addExecutor = async (executor: Omit<Executor, 'id'>) => {
+    const newExecutor: Executor = { ...executor, id: generateId() };
+    const newExecutores = [...executoresRef.current, newExecutor];
+    executoresRef.current = newExecutores;
+    setExecutores(newExecutores);
+    await saveData();
+    return newExecutor;
+  };
+
+  const updateExecutor = (id: string, updates: Partial<Executor>) => {
+    setExecutores(executores.map(executor => executor.id === id ? { ...executor, ...updates } : executor));
+  };
+
+  const deleteExecutor = (id: string) => {
+    setExecutores(executores.filter(executor => executor.id !== id));
+  };
+
+  const getExecutorById = (id: string) => {
+    return executores.find(executor => executor.id === id);
   };
 
   const updateCliente = (id: string, updates: Partial<Cliente>) => {
@@ -285,11 +324,12 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
   };
 
   const exportData = () => {
-    return { clientes, sprints, tasks };
+    return { clientes, executores, sprints, tasks };
   };
 
-  const importData = (data: { clientes: Cliente[], sprints: Sprint[], tasks: Task[] }) => {
+  const importData = (data: { clientes: Cliente[], executores: Executor[], sprints: Sprint[], tasks: Task[] }) => {
     setClientes(data.clientes);
+    setExecutores(data.executores);
     setSprints(data.sprints);
     setTasks(data.tasks);
   };
@@ -299,7 +339,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
       await fetch('/api/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientes: clientesRef.current, sprints: sprintsRef.current, tasks: tasksRef.current }),
+        body: JSON.stringify({ clientes: clientesRef.current, executores: executoresRef.current, sprints: sprintsRef.current, tasks: tasksRef.current }),
       });
     } catch (err) {
       console.error('Failed to save data:', err);
@@ -321,11 +361,16 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
   return (
     <ScrumContext.Provider value={{
       clientes,
+      executores,
       tasks,
       sprints,
       addCliente,
       updateCliente,
       deleteCliente,
+      addExecutor,
+      updateExecutor,
+      deleteExecutor,
+      getExecutorById,
       addSprint,
       updateSprint,
       moveSprintToCliente,

@@ -5,7 +5,7 @@ import { useScrum } from '@/context/ScrumContext';
 import { useRouter, useParams } from 'next/navigation';
 
 export default function CreateTaskPage() {
-  const { sprints, addTask } = useScrum();
+  const { sprints, addTask, executores } = useScrum();
   const router = useRouter();
   const params = useParams();
   const sprintId = params.sprintId as string;
@@ -55,13 +55,18 @@ export default function CreateTaskPage() {
 
               <div>
                 <label className="block text-sm font-medium mb-1">Responsável (opcional)</label>
-                <input
-                  type="text"
+                <select
                   value={assignee}
                   onChange={(e) => setAssignee(e.target.value)}
                   className="w-full border border-gray-300 rounded px-3 py-2"
-                  placeholder="Nome do responsável"
-                />
+                >
+                  <option value="">Selecione um responsável</option>
+                  {executores.map((executor) => (
+                    <option key={executor.id} value={executor.nome}>
+                      {executor.nome} - {executor.cargo}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
