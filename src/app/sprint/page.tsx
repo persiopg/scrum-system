@@ -5,16 +5,34 @@ import { useScrum } from '@/context/ScrumContext';
 import { useRouter } from 'next/navigation';
 
 export default function SprintPage() {
-  const { addSprint } = useScrum();
+  const { addSprint, addTask } = useScrum();
   const router = useRouter();
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [totalTasks, setTotalTasks] = useState(0);
+  const [tasks, setTasks] = useState<string[]>(['']); // Array de descrições de tarefas
+
+  const addTaskField = () => {
+    setTasks([...tasks, '']);
+  };
+
+  const updateTask = (index: number, value: string) => {
+    const newTasks = [...tasks];
+    newTasks[index] = value;
+    setTasks(newTasks);
+  };
+
+  const removeTask = (index: number) => {
+    setTasks(tasks.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addSprint({ name, startDate, endDate, totalTasks });
+    const sprint = addSprint({ name, startDate, endDate, totalTasks: tasks.filter(t => t.trim()).length });
+    // Adicionar tarefas ao sprint
+    tasks.filter(t => t.trim()).forEach(description => {
+      addTask({ sprintId: sprint.id, description, status: 'pending' });
+    });
     router.push('/dashboard');
   };
 
@@ -53,16 +71,36 @@ export default function SprintPage() {
               required
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium mb-1">Total de Tarefas</label>
-            <input
-              type="number"
-              value={totalTasks}
-              onChange={(e) => setTotalTasks(Number(e.target.value))}
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              required
-            />
+            <label className="block text-sm font-medium mb-2">Atividades do Sprint</label>
+            {tasks.map((task, index) => (
+              <div key={index} className="flex mb-2">
+                <input
+                  type="text"
+                  placeholder="Descrição da atividade"
+                  value={task}
+                  onChange={(e) => updateTask(index, e.target.value)}
+                  className="flex-1 border border-gray-300 rounded px-3 py-2 mr-2"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeTask(index)}
+                  className="bg-red-500 text-white px-2 py-1 rounded"
+                >
+                  X
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addTaskField}
+              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+            >
+              Adicionar Atividade
+            </button>
           </div>
+
           <button
             type="submit"
             className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"

@@ -23,7 +23,7 @@ export interface Task {
 interface ScrumContextType {
   sprints: Sprint[];
   tasks: Task[];
-  addSprint: (sprint: Omit<Sprint, 'id'>) => void;
+  addSprint: (sprint: Omit<Sprint, 'id'>) => Sprint;
   addTask: (task: Omit<Task, 'id'>) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
@@ -39,6 +39,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
   const addSprint = (sprint: Omit<Sprint, 'id'>) => {
     const newSprint: Sprint = { ...sprint, id: Date.now().toString() };
     setSprints([...sprints, newSprint]);
+    return newSprint;
   };
 
   const addTask = (task: Omit<Task, 'id'>) => {
