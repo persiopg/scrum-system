@@ -97,7 +97,7 @@ export default function TasksPage() {
               />
               <button
                 onClick={addTaskToSprint}
-                className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                className="mt-2 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800"
               >
                 Adicionar Atividade
               </button>
@@ -131,13 +131,13 @@ export default function TasksPage() {
             <div className="mt-4 space-x-2">
               <button
                 onClick={completeTask}
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                className="bg-rose-500 text-white px-4 py-2 rounded hover:bg-rose-500"
               >
                 Concluir
               </button>
               <button
                 onClick={() => setEditingTask(null)}
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                className="bg-purple-800 text-white px-4 py-2 rounded hover:bg-purple-900"
               >
                 Cancelar
               </button>
@@ -160,13 +160,13 @@ export default function TasksPage() {
                     />
                     <button
                       onClick={saveDescription}
-                      className="mt-1 bg-green-500 text-white px-2 py-1 rounded text-sm mr-2"
+                      className="mt-1 bg-rose-500 text-white px-2 py-1 rounded text-sm mr-2"
                     >
                       Salvar
                     </button>
                     <button
                       onClick={() => setEditingDescription(null)}
-                      className="mt-1 bg-gray-500 text-white px-2 py-1 rounded text-sm"
+                      className="mt-1 bg-purple-800 text-white px-2 py-1 rounded text-sm"
                     >
                       Cancelar
                     </button>
@@ -177,7 +177,7 @@ export default function TasksPage() {
                     {task.status === 'pending' && (
                       <button
                         onClick={() => startEditDescription(task.id, task.description)}
-                        className="bg-blue-500 text-white px-2 py-1 rounded text-sm"
+                        className="bg-purple-600 text-white px-2 py-1 rounded text-sm"
                       >
                         Editar
                       </button>
@@ -197,13 +197,13 @@ export default function TasksPage() {
                     <>
                       <button
                         onClick={() => updateTaskStatus(task.id, 'in-progress')}
-                        className="bg-orange-500 text-white px-2 py-1 rounded text-sm"
+                        className="bg-pink-300 text-white px-2 py-1 rounded text-sm"
                       >
                         Em Andamento
                       </button>
                       <button
                         onClick={() => updateTaskStatus(task.id, 'completed')}
-                        className="bg-green-500 text-white px-2 py-1 rounded text-sm"
+                        className="bg-rose-500 text-white px-2 py-1 rounded text-sm"
                       >
                         Concluir
                       </button>
@@ -211,7 +211,7 @@ export default function TasksPage() {
                   )}
                   <button
                     onClick={() => deleteTaskFromSprint(task.id)}
-                    className="bg-red-500 text-white px-2 py-1 rounded text-sm"
+                    className="bg-purple-900 text-white px-2 py-1 rounded text-sm"
                   >
                     Excluir
                   </button>

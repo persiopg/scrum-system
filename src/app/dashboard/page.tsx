@@ -86,11 +86,11 @@ export default function DashboardPage() {
           <h2 className="text-xl font-semibold mb-4">Backup e Restauração</h2>
           <button
             onClick={handleExport}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mr-4"
+            className="bg-rose-500 text-white px-4 py-2 rounded hover:bg-rose-500 mr-4"
           >
             Exportar Dados (JSON)
           </button>
-          <label className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer">
+          <label className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800 cursor-pointer">
             Importar Dados (JSON)
             <input
               type="file"
@@ -113,7 +113,7 @@ export default function DashboardPage() {
               <option key={sprint.id} value={sprint.id}>{sprint.name}</option>
             ))}
           </select>
-          <Link href="/sprint" className="text-blue-500 hover:underline ml-4">Criar Novo Sprint</Link>
+          <Link href="/sprint" className="text-purple-600 hover:underline ml-4">Criar Novo Sprint</Link>
         </div>
 
         {selectedSprint && (
@@ -128,7 +128,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="mb-6">
-              <Link href="/tasks" className="text-blue-500 hover:underline">Gerenciar Tarefas do Sprint</Link>
+              <Link href="/tasks" className="text-purple-600 hover:underline">Gerenciar Tarefas do Sprint</Link>
             </div>
 
             <div>

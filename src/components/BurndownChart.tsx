@@ -23,8 +23,8 @@ export function BurndownChart({ data }: BurndownChartProps) {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="expected" stroke="#8884d8" name="Expectativa" />
-          <Line type="monotone" dataKey="actual" stroke="#82ca9d" name="Real" />
+          <Line type="monotone" dataKey="expected" stroke="#2B124C" name="Expectativa" />
+          <Line type="monotone" dataKey="actual" stroke="#854F6C" name="Real" />
         </LineChart>
       </ResponsiveContainer>
     </div>

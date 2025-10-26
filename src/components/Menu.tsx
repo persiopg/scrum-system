@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export function Menu() {
   return (
-    <nav className="bg-blue-600 text-white p-4">
+    <nav className="bg-purple-600 text-white p-4">
       <div className="max-w-4xl mx-auto flex space-x-4">
         <Link href="/dashboard">Dashboard</Link>
         <Link href="/sprint">Criar Sprint</Link>

@@ -86,7 +86,7 @@ export default function SprintPage() {
                 <button
                   type="button"
                   onClick={() => removeTask(index)}
-                  className="bg-red-500 text-white px-2 py-1 rounded"
+                  className="bg-purple-900 text-white px-2 py-1 rounded"
                 >
                   X
                 </button>
@@ -95,7 +95,7 @@ export default function SprintPage() {
             <button
               type="button"
               onClick={addTaskField}
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              className="bg-purple-800 text-white px-4 py-2 rounded hover:bg-purple-900"
             >
               Adicionar Atividade
             </button>
@@ -103,7 +103,7 @@ export default function SprintPage() {
 
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800"
           >
             Criar Sprint
           </button>
