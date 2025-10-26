@@ -49,6 +49,13 @@ const ScrumContext = createContext<ScrumContextType | undefined>(undefined);
 export function ScrumProvider({ children }: { children: ReactNode }) {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [idCounter, setIdCounter] = useState<number>(0); // Contador para IDs únicos
+
+  // Função para gerar ID único
+  const generateId = () => {
+    setIdCounter(prev => prev + 1);
+    return `id_${Date.now()}_${idCounter}`;
+  };
 
   // Load from API on mount
   useEffect(() => {
@@ -71,7 +78,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
   }, [clientes, tasks]);
 
   const addCliente = (cliente: Omit<Cliente, 'id' | 'sprints'>) => {
-    const newCliente: Cliente = { ...cliente, id: Date.now().toString(), sprints: [] };
+    const newCliente: Cliente = { ...cliente, id: generateId(), sprints: [] };
     setClientes([...clientes, newCliente]);
     return newCliente;
   };
@@ -91,7 +98,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
   };
 
   const addSprintToCliente = (clienteId: string, sprint: Omit<Sprint, 'id' | 'isActive'>) => {
-    const newSprint: Sprint = { ...sprint, id: Date.now().toString(), isActive: false };
+    const newSprint: Sprint = { ...sprint, id: generateId(), isActive: false };
     setClientes(clientes.map(cliente =>
       cliente.id === clienteId
         ? { ...cliente, sprints: [...cliente.sprints, newSprint] }
@@ -121,7 +128,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
   };
 
   const addTask = (task: Omit<Task, 'id'>) => {
-    const newTask: Task = { ...task, id: Date.now().toString() };
+    const newTask: Task = { ...task, id: generateId() };
     setTasks([...tasks, newTask]);
   };
 
