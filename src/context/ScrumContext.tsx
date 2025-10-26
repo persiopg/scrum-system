@@ -49,12 +49,15 @@ const ScrumContext = createContext<ScrumContextType | undefined>(undefined);
 export function ScrumProvider({ children }: { children: ReactNode }) {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [idCounter, setIdCounter] = useState<number>(0); // Contador para IDs únicos
 
-  // Função para gerar ID único
+  // Função para gerar ID único usando crypto.randomUUID se disponível, senão timestamp + contador
+  let idCounter = 0;
   const generateId = () => {
-    setIdCounter(prev => prev + 1);
-    return `id_${Date.now()}_${idCounter}`;
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    // Fallback para ambientes sem crypto.randomUUID
+    return `id_${Date.now()}_${++idCounter}`;
   };
 
   // Load from API on mount

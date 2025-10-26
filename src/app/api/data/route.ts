@@ -10,7 +10,7 @@ export async function GET() {
       const data = fs.readFileSync(dataFilePath, 'utf8');
       return NextResponse.json(JSON.parse(data));
     } else {
-      return NextResponse.json({ sprints: [], tasks: [] });
+      return NextResponse.json({ clientes: [], tasks: [] });
     }
   } catch (error) {
     console.error('Failed to load data:', error);
