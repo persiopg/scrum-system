@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 export interface Sprint {
   id: string;
@@ -28,6 +28,8 @@ interface ScrumContextType {
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
   getTasksBySprint: (sprintId: string) => Task[];
+  exportData: () => { sprints: Sprint[], tasks: Task[] };
+  importData: (data: { sprints: Sprint[], tasks: Task[] }) => void;
 }
 
 const ScrumContext = createContext<ScrumContextType | undefined>(undefined);
@@ -35,6 +37,26 @@ const ScrumContext = createContext<ScrumContextType | undefined>(undefined);
 export function ScrumProvider({ children }: { children: ReactNode }) {
   const [sprints, setSprints] = useState<Sprint[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+
+  // Load from API on mount
+  useEffect(() => {
+    fetch('/api/data')
+      .then(res => res.json())
+      .then(data => {
+        if (data.sprints) setSprints(data.sprints);
+        if (data.tasks) setTasks(data.tasks);
+      })
+      .catch(err => console.error('Failed to load data:', err));
+  }, []);
+
+  // Save to API whenever state changes
+  useEffect(() => {
+    fetch('/api/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sprints, tasks }),
+    }).catch(err => console.error('Failed to save data:', err));
+  }, [sprints, tasks]);
 
   const addSprint = (sprint: Omit<Sprint, 'id'>) => {
     const newSprint: Sprint = { ...sprint, id: Date.now().toString() };
@@ -59,6 +81,15 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
     return tasks.filter(task => task.sprintId === sprintId);
   };
 
+  const exportData = () => {
+    return { sprints, tasks };
+  };
+
+  const importData = (data: { sprints: Sprint[], tasks: Task[] }) => {
+    setSprints(data.sprints);
+    setTasks(data.tasks);
+  };
+
   return (
     <ScrumContext.Provider value={{
       sprints,
@@ -68,6 +99,8 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
       updateTask,
       deleteTask,
       getTasksBySprint,
+      exportData,
+      importData,
     }}>
       {children}
     </ScrumContext.Provider>

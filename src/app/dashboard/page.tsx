@@ -6,7 +6,7 @@ import { BurndownChart } from '@/components/BurndownChart';
 import { useScrum } from '@/context/ScrumContext';
 
 export default function DashboardPage() {
-  const { sprints, getTasksBySprint } = useScrum();
+  const { sprints, getTasksBySprint, exportData, importData } = useScrum();
   const [selectedSprintId, setSelectedSprintId] = useState<string>('');
 
   const selectedSprint = sprints.find(s => s.id === selectedSprintId);
@@ -48,10 +48,58 @@ export default function DashboardPage() {
 
   const chartData = generateChartData();
 
+  const handleExport = () => {
+    const data = exportData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'scrum-data.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target?.result as string);
+          importData(data);
+          alert('Dados importados com sucesso!');
+        } catch (error) {
+          console.error(error);
+          alert('Erro ao importar dados.');
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
   return (
     <div className="p-8">
       <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
         <h1 className="text-2xl font-bold mb-6">Dashboard Scrum</h1>
+
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-4">Backup e Restauração</h2>
+          <button
+            onClick={handleExport}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mr-4"
+          >
+            Exportar Dados (JSON)
+          </button>
+          <label className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer">
+            Importar Dados (JSON)
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleImport}
+              className="hidden"
+            />
+          </label>
+        </div>
 
         <div className="mb-6">
           <label className="block text-sm font-medium mb-2">Selecionar Sprint</label>

@@ -11,6 +11,8 @@ export default function TasksPage() {
   const [assignee, setAssignee] = useState('');
   const [date, setDate] = useState('');
   const [timeSpent, setTimeSpent] = useState(0);
+  const [editingDescription, setEditingDescription] = useState<string | null>(null);
+  const [newDescription, setNewDescription] = useState('');
 
   const selectedSprint = sprints.find(s => s.id === selectedSprintId);
   const sprintTasks = selectedSprint ? getTasksBySprint(selectedSprint.id) : [];
@@ -48,6 +50,19 @@ export default function TasksPage() {
 
   const deleteTaskFromSprint = (id: string) => {
     deleteTask(id);
+  };
+
+  const startEditDescription = (taskId: string, currentDescription: string) => {
+    setEditingDescription(taskId);
+    setNewDescription(currentDescription);
+  };
+
+  const saveDescription = () => {
+    if (editingDescription) {
+      updateTask(editingDescription, { description: newDescription });
+      setEditingDescription(null);
+      setNewDescription('');
+    }
   };
 
   return (
@@ -135,7 +150,40 @@ export default function TasksPage() {
           <div className="space-y-4">
             {sprintTasks.map((task) => (
               <div key={task.id} className="border border-gray-300 rounded p-4">
-                <h3 className="font-semibold">{task.description}</h3>
+                {editingDescription === task.id ? (
+                  <div className="mb-2">
+                    <input
+                      type="text"
+                      value={newDescription}
+                      onChange={(e) => setNewDescription(e.target.value)}
+                      className="w-full border border-gray-300 rounded px-3 py-2"
+                    />
+                    <button
+                      onClick={saveDescription}
+                      className="mt-1 bg-green-500 text-white px-2 py-1 rounded text-sm mr-2"
+                    >
+                      Salvar
+                    </button>
+                    <button
+                      onClick={() => setEditingDescription(null)}
+                      className="mt-1 bg-gray-500 text-white px-2 py-1 rounded text-sm"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                ) : (
+                  <h3 className="font-semibold flex justify-between items-center">
+                    {task.description}
+                    {task.status === 'pending' && (
+                      <button
+                        onClick={() => startEditDescription(task.id, task.description)}
+                        className="bg-blue-500 text-white px-2 py-1 rounded text-sm"
+                      >
+                        Editar
+                      </button>
+                    )}
+                  </h3>
+                )}
                 <p>Status: {task.status}</p>
                 {task.status === 'completed' && (
                   <>
