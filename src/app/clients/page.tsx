@@ -55,7 +55,7 @@ export default function ClientsPage() {
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
                       <Link
-                        href={`/sprint?clienteId=${cliente.id}`}
+                        href={`/sprint/create?clienteId=${cliente.id}`}
                         className="text-purple-600 hover:underline mr-2"
                       >
                         Criar Sprint

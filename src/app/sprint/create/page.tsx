@@ -2,16 +2,19 @@
 
 import { useState } from 'react';
 import { useScrum } from '@/context/ScrumContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function CreateSprintPage() {
   const { clientes, addSprint, addTasks, setSprintAtiva } = useScrum();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const clienteIdFromUrl = searchParams.get('clienteId');
+
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [tasks, setTasks] = useState<string[]>(['']); // Array de descrições de tarefas
-  const [selectedClienteId, setSelectedClienteId] = useState<string>('');
+  const [selectedClienteId, setSelectedClienteId] = useState<string>(clienteIdFromUrl || '');
   const [ativarSprint, setAtivarSprint] = useState(false);
 
   const selectedCliente = selectedClienteId ? clientes.find(c => c.id === selectedClienteId) : null;

@@ -1,14 +1,40 @@
 "use client";
 
 import { useScrum } from '@/context/ScrumContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 
 export default function SprintPage() {
-  const { sprints, getClienteById, deleteSprint } = useScrum();
+  const { sprints, getClienteById, deleteSprint, updateSprint, clientes } = useScrum();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editSprintId = searchParams.get('editSprintId');
+
+  const editingSprint = editSprintId ? sprints.find(s => s.id === editSprintId) : null;
+
+  const [editName, setEditName] = useState(editingSprint?.name || '');
+  const [editStartDate, setEditStartDate] = useState(editingSprint?.startDate || '');
+  const [editEndDate, setEditEndDate] = useState(editingSprint?.endDate || '');
+  const [editClienteId, setEditClienteId] = useState(editingSprint?.clienteId || '');
 
   const handleEdit = (sprintId: string) => {
     router.push(`/sprint?editSprintId=${sprintId}`);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingSprint) {
+      updateSprint(editingSprint.id, {
+        name: editName,
+        startDate: editStartDate,
+        endDate: editEndDate,
+        clienteId: editClienteId,
+      });
+      router.push('/sprint');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    router.push('/sprint');
   };
 
   const handleDelete = (sprintId: string) => {
@@ -20,6 +46,79 @@ export default function SprintPage() {
   const handleCreateNew = () => {
     router.push('/sprint/create');
   };
+
+  if (editingSprint) {
+    return (
+      <div className="p-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-2xl font-bold mb-6">Editar Sprint</h1>
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <form onSubmit={(e) => { e.preventDefault(); handleSaveEdit(); }} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Cliente</label>
+                <select
+                  value={editClienteId}
+                  onChange={(e) => setEditClienteId(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  required
+                >
+                  <option value="">Selecione um cliente</option>
+                  {clientes.map(cliente => (
+                    <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Nome do Sprint</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Data de Início</label>
+                <input
+                  type="date"
+                  value={editStartDate}
+                  onChange={(e) => setEditStartDate(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Data de Fim</label>
+                <input
+                  type="date"
+                  value={editEndDate}
+                  onChange={(e) => setEditEndDate(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  required
+                />
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  type="submit"
+                  className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800"
+                >
+                  Salvar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-800"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
