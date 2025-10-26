@@ -7,13 +7,14 @@ import { BurndownChart } from '@/components/BurndownChart';
 import { useScrum } from '@/context/ScrumContext';
 
 export default function DashboardPage() {
-  const { clientes, getClienteById, getTasksBySprint, exportData, importData } = useScrum();
+  const { clientes, getClienteById, getSprintsByCliente, getTasksBySprint, exportData, importData } = useScrum();
   const searchParams = useSearchParams();
   const clienteId = searchParams.get('clienteId');
   const [selectedClienteId, setSelectedClienteId] = useState<string>(clienteId || '');
 
   const selectedCliente = selectedClienteId ? getClienteById(selectedClienteId) : null;
-  const sprintAtiva = selectedCliente?.sprintAtiva ? selectedCliente.sprints.find(s => s.id === selectedCliente.sprintAtiva) : null;
+  const sprintsCliente = selectedClienteId ? getSprintsByCliente(selectedClienteId) : [];
+  const sprintAtiva = selectedCliente?.sprintAtiva ? sprintsCliente.find(s => s.id === selectedCliente.sprintAtiva) : null;
   const tasks = sprintAtiva ? getTasksBySprint(sprintAtiva.id) : [];
 
   const generateChartData = () => {

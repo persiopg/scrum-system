@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 
 export interface Sprint {
   id: string;
+  clienteId: string;
   name: string;
   startDate: string;
   endDate: string;
@@ -24,31 +25,36 @@ export interface Task {
 export interface Cliente {
   id: string;
   nome: string;
-  sprints: Sprint[];
   sprintAtiva?: string; // id da sprint ativa
 }
 
 interface ScrumContextType {
   clientes: Cliente[];
-  addCliente: (cliente: Omit<Cliente, 'id' | 'sprints'>) => Cliente;
+  sprints: Sprint[];
+  addCliente: (cliente: Omit<Cliente, 'id'>) => Cliente;
   updateCliente: (id: string, updates: Partial<Cliente>) => void;
   deleteCliente: (id: string) => void;
-  addSprintToCliente: (clienteId: string, sprint: Omit<Sprint, 'id' | 'isActive'>) => Sprint;
+  addSprint: (sprint: Omit<Sprint, 'id'>) => Sprint;
+  updateSprint: (sprintId: string, updates: Partial<Sprint>) => void;
+  moveSprintToCliente: (sprintId: string, newClienteId: string) => void;
+  deleteSprint: (sprintId: string) => void;
   setSprintAtiva: (clienteId: string, sprintId: string) => void;
   getClienteById: (id: string) => Cliente | undefined;
+  getSprintsByCliente: (clienteId: string) => Sprint[];
   getTasksBySprint: (sprintId: string) => Task[];
   addTask: (task: Omit<Task, 'id'>) => void;
   addTasks: (tasks: Omit<Task, 'id'>[]) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
-  exportData: () => { clientes: Cliente[], tasks: Task[] };
-  importData: (data: { clientes: Cliente[], tasks: Task[] }) => void;
+  exportData: () => { clientes: Cliente[], sprints: Sprint[], tasks: Task[] };
+  importData: (data: { clientes: Cliente[], sprints: Sprint[], tasks: Task[] }) => void;
 }
 
 const ScrumContext = createContext<ScrumContextType | undefined>(undefined);
 
 export function ScrumProvider({ children }: { children: ReactNode }) {
   const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [sprints, setSprints] = useState<Sprint[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
 
   // Função para gerar ID único usando crypto.randomUUID se disponível, senão timestamp + contador
@@ -67,6 +73,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
       .then(res => res.json())
       .then(data => {
         if (data.clientes) setClientes(data.clientes);
+        if (data.sprints) setSprints(data.sprints);
         if (data.tasks) setTasks(data.tasks);
       })
       .catch(err => console.error('Failed to load data:', err));
@@ -77,12 +84,12 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
     fetch('/api/data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clientes, tasks }),
+      body: JSON.stringify({ clientes, sprints, tasks }),
     }).catch(err => console.error('Failed to save data:', err));
-  }, [clientes, tasks]);
+  }, [clientes, sprints, tasks]);
 
-  const addCliente = (cliente: Omit<Cliente, 'id' | 'sprints'>) => {
-    const newCliente: Cliente = { ...cliente, id: generateId(), sprints: [] };
+  const addCliente = (cliente: Omit<Cliente, 'id'>) => {
+    const newCliente: Cliente = { ...cliente, id: generateId() };
     setClientes([...clientes, newCliente]);
     return newCliente;
   };
@@ -93,42 +100,52 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
 
   const deleteCliente = (id: string) => {
     setClientes(clientes.filter(cliente => cliente.id !== id));
-    // Remover tarefas associadas às sprints do cliente
-    const cliente = clientes.find(c => c.id === id);
-    if (cliente) {
-      const sprintIds = cliente.sprints.map(s => s.id);
-      setTasks(tasks.filter(task => !sprintIds.includes(task.sprintId)));
-    }
+    // Remover sprints associadas
+    setSprints(sprints.filter(sprint => sprint.clienteId !== id));
+    // Remover tarefas associadas
+    const sprintIds = sprints.filter(s => s.clienteId === id).map(s => s.id);
+    setTasks(tasks.filter(task => !sprintIds.includes(task.sprintId)));
   };
 
-  const addSprintToCliente = (clienteId: string, sprint: Omit<Sprint, 'id' | 'isActive'>) => {
-    const newSprint: Sprint = { ...sprint, id: generateId(), isActive: false };
-    setClientes(clientes.map(cliente =>
-      cliente.id === clienteId
-        ? { ...cliente, sprints: [...cliente.sprints, newSprint] }
-        : cliente
-    ));
+  const addSprint = (sprint: Omit<Sprint, 'id'>) => {
+    const newSprint: Sprint = { ...sprint, id: generateId() };
+    setSprints([...sprints, newSprint]);
     return newSprint;
+  };
+
+  const updateSprint = (sprintId: string, updates: Partial<Sprint>) => {
+    setSprints(sprints.map(sprint => sprint.id === sprintId ? { ...sprint, ...updates } : sprint));
+  };
+
+  const moveSprintToCliente = (sprintId: string, newClienteId: string) => {
+    setSprints(sprints.map(sprint => sprint.id === sprintId ? { ...sprint, clienteId: newClienteId } : sprint));
+  };
+
+  const deleteSprint = (sprintId: string) => {
+    setSprints(sprints.filter(sprint => sprint.id !== sprintId));
+    // Remover tarefas associadas
+    setTasks(tasks.filter(task => task.sprintId !== sprintId));
   };
 
   const setSprintAtiva = (clienteId: string, sprintId: string) => {
     setClientes(clientes.map(cliente =>
       cliente.id === clienteId
-        ? {
-            ...cliente,
-            sprintAtiva: sprintId,
-            sprints: cliente.sprints.map(sprint =>
-              sprint.id === sprintId
-                ? { ...sprint, isActive: true }
-                : { ...sprint, isActive: false }
-            )
-          }
+        ? { ...cliente, sprintAtiva: sprintId }
         : cliente
+    ));
+    setSprints(sprints.map(sprint =>
+      sprint.clienteId === clienteId
+        ? { ...sprint, isActive: sprint.id === sprintId }
+        : sprint
     ));
   };
 
   const getClienteById = (id: string) => {
     return clientes.find(cliente => cliente.id === id);
+  };
+
+  const getSprintsByCliente = (clienteId: string) => {
+    return sprints.filter(sprint => sprint.clienteId === clienteId);
   };
 
   const addTask = (task: Omit<Task, 'id'>) => {
@@ -155,23 +172,29 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
   };
 
   const exportData = () => {
-    return { clientes, tasks };
+    return { clientes, sprints, tasks };
   };
 
-  const importData = (data: { clientes: Cliente[], tasks: Task[] }) => {
+  const importData = (data: { clientes: Cliente[], sprints: Sprint[], tasks: Task[] }) => {
     setClientes(data.clientes);
+    setSprints(data.sprints);
     setTasks(data.tasks);
   };
 
   return (
     <ScrumContext.Provider value={{
       clientes,
+      sprints,
       addCliente,
       updateCliente,
       deleteCliente,
-      addSprintToCliente,
+      addSprint,
+      updateSprint,
+      moveSprintToCliente,
+      deleteSprint,
       setSprintAtiva,
       getClienteById,
+      getSprintsByCliente,
       getTasksBySprint,
       addTask,
       addTasks,

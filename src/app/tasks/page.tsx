@@ -5,7 +5,7 @@ import { useScrum, Task } from '@/context/ScrumContext';
 import { useSearchParams } from 'next/navigation';
 
 export default function TasksPage() {
-  const { clientes, getClienteById, getTasksBySprint, addTask, updateTask, deleteTask, setSprintAtiva } = useScrum();
+  const { clientes, getClienteById, getSprintsByCliente, getTasksBySprint, addTask, updateTask, deleteTask, setSprintAtiva } = useScrum();
   const searchParams = useSearchParams();
   const clienteId = searchParams.get('clienteId');
   const [selectedClienteId, setSelectedClienteId] = useState<string>(clienteId || '');
@@ -19,8 +19,9 @@ export default function TasksPage() {
   const [newDescription, setNewDescription] = useState('');
 
   const selectedCliente = selectedClienteId ? getClienteById(selectedClienteId) : null;
-  const sprintAtiva = selectedCliente?.sprintAtiva ? selectedCliente.sprints.find(s => s.id === selectedCliente.sprintAtiva) : null;
-  const selectedSprint = selectedSprintId ? selectedCliente?.sprints.find(s => s.id === selectedSprintId) : sprintAtiva;
+  const sprintsCliente = selectedClienteId ? getSprintsByCliente(selectedClienteId) : [];
+  const sprintAtiva = selectedCliente?.sprintAtiva ? sprintsCliente.find(s => s.id === selectedCliente.sprintAtiva) : null;
+  const selectedSprint = selectedSprintId ? sprintsCliente.find(s => s.id === selectedSprintId) : sprintAtiva;
   const sprintTasks = selectedSprint ? getTasksBySprint(selectedSprint.id) : [];
 
   const addTaskToSprint = () => {
@@ -110,7 +111,7 @@ export default function TasksPage() {
                 className="border border-gray-300 rounded px-3 py-2 w-full mb-2"
               >
                 <option value="">Sprint Ativa: {sprintAtiva?.name || 'Nenhuma'}</option>
-                {selectedCliente.sprints.map(sprint => (
+                {sprintsCliente.map(sprint => (
                   <option key={sprint.id} value={sprint.id}>
                     {sprint.name} {sprint.isActive ? '(Ativa)' : ''}
                   </option>
