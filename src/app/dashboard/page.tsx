@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { BurndownChart } from '@/components/BurndownChart';
 import { TaskStatusChart } from '@/components/TaskStatusChart';
@@ -9,6 +9,7 @@ import { useScrum } from '@/context/ScrumContext';
 
 function DashboardContent() {
   const { getClienteById, getSprintsByCliente, getTasksBySprint, exportData, importData, selectedClienteId } = useScrum();
+  const [report, setReport] = useState<string | null>(null);
 
   const selectedCliente = selectedClienteId ? getClienteById(selectedClienteId) : null;
   const sprintsCliente = selectedClienteId ? getSprintsByCliente(selectedClienteId) : [];
@@ -112,6 +113,40 @@ function DashboardContent() {
   };
 
   const alerts = getAlerts();
+
+  const handleGenerateReport = async () => {
+    if (!selectedClienteId) {
+      alert('Selecione um cliente primeiro.');
+      return;
+    }
+
+    const cliente = getClienteById(selectedClienteId);
+    const sprints = getSprintsByCliente(selectedClienteId);
+    const tasks = sprints.flatMap(sprint => getTasksBySprint(sprint.id));
+    const metrics = {
+      teamVelocity,
+      avgCompletionTime,
+      completionRate,
+    };
+
+    try {
+      const response = await fetch('/api/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: { cliente, sprints, tasks, metrics } }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setReport(data.report);
+      } else {
+        alert('Erro ao gerar relatório.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao gerar relatório.');
+    }
+  };
 
   const generateChartData = () => {
     if (!sprintAtiva) {
@@ -347,6 +382,23 @@ function DashboardContent() {
               )}
             </>
           )}
+
+          {/* Nova seção para relatório com IA */}
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-4">Relatório com IA</h2>
+            <button
+              onClick={handleGenerateReport}
+              style={{background: 'linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%)'}}
+              className="px-4 py-2 rounded text-white mb-4"
+            >
+              Gerar Relatório com IA
+            </button>
+            {report && (
+              <div className="p-4 bg-gray-800 rounded">
+                <pre className="whitespace-pre-wrap text-gray-200">{report}</pre>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
