@@ -12,9 +12,19 @@
   ],
   "executores": [
     {
-      "nome": "Persio de paula Godoy",
-      "cargo": "dev",
+      "nome": "Persio de Paula Godoy",
+      "cargo": "DEV",
       "id": "cd5fcfb5-ac5e-48ca-abca-88698880fa63"
+    },
+    {
+      "nome": "Quemoel",
+      "cargo": "DEV",
+      "id": "4c1523c3-b681-44b8-835d-720619383b99"
+    },
+    {
+      "nome": "Ricardo",
+      "cargo": "Fullstack",
+      "id": "93213c9f-d733-4fea-9a11-cc44f3dde4f0"
     }
   ],
   "sprints": [
@@ -53,12 +63,6 @@
       "description": "d",
       "status": "pending",
       "id": "f9973e65-7bf6-4d88-8381-0d77eb21aa79"
-    },
-    {
-      "sprintId": "45a2654e-57f4-4435-96d6-9b3d67452016",
-      "description": "e",
-      "status": "pending",
-      "id": "8f4ddc05-d288-4577-8e0d-796fdfa07bb5"
     }
   ]
 }

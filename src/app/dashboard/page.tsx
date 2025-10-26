@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { BurndownChart } from '@/components/BurndownChart';
 import { TaskStatusChart } from '@/components/TaskStatusChart';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { useScrum } from '@/context/ScrumContext';
 
 function DashboardContent() {
@@ -13,6 +14,104 @@ function DashboardContent() {
   const sprintsCliente = selectedClienteId ? getSprintsByCliente(selectedClienteId) : [];
   const sprintAtiva = selectedCliente?.sprintAtiva ? sprintsCliente.find(s => s.id === selectedCliente.sprintAtiva && s.isActive) : null;
   const tasks = sprintAtiva ? getTasksBySprint(sprintAtiva.id) : [];
+
+  const calculateTeamVelocity = () => {
+    if (!selectedClienteId) return 0;
+    const allSprints = getSprintsByCliente(selectedClienteId);
+    const completedSprints = allSprints.filter(s => !s.isActive && new Date(s.endDate) < new Date());
+    if (completedSprints.length === 0) return 0;
+    const totalCompletedTasks = completedSprints.reduce((sum, sprint) => {
+      const sprintTasks = getTasksBySprint(sprint.id);
+      return sum + sprintTasks.filter(t => t.status === 'completed').length;
+    }, 0);
+    return Math.round(totalCompletedTasks / completedSprints.length);
+  };
+
+  const calculateVelocityChartData = () => {
+    if (!selectedClienteId) return [];
+    const allSprints = getSprintsByCliente(selectedClienteId);
+    const completedSprints = allSprints.filter(s => !s.isActive && new Date(s.endDate) < new Date());
+    return completedSprints.map(sprint => {
+      const sprintTasks = getTasksBySprint(sprint.id);
+      const completedTasks = sprintTasks.filter(t => t.status === 'completed').length;
+      return {
+        name: sprint.name,
+        velocity: completedTasks,
+      };
+    });
+  };
+
+  const teamVelocity = calculateTeamVelocity();
+  const velocityChartData = calculateVelocityChartData();
+
+  const calculatePerformanceMetrics = () => {
+    if (!selectedClienteId) return { avgCompletionTime: 0, completionRate: 0 };
+    const allSprints = getSprintsByCliente(selectedClienteId);
+    const allTasks = allSprints.flatMap(sprint => getTasksBySprint(sprint.id));
+    const completedTasks = allTasks.filter(t => t.status === 'completed');
+    const completionRate = allTasks.length > 0 ? (completedTasks.length / allTasks.length) * 100 : 0;
+
+    // Calcular tempo médio de conclusão (dias)
+    const tasksWithTime = completedTasks.filter(t => t.date);
+    const avgCompletionTime = tasksWithTime.length > 0
+      ? tasksWithTime.reduce((sum, t) => {
+          const sprint = allSprints.find(s => s.id === t.sprintId);
+          if (!sprint) return sum;
+          const start = new Date(sprint.startDate);
+          const end = new Date(t.date!);
+          const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+          return sum + days;
+        }, 0) / tasksWithTime.length
+      : 0;
+
+    return { avgCompletionTime: Math.round(avgCompletionTime * 10) / 10, completionRate: Math.round(completionRate * 10) / 10 };
+  };
+
+  const calculatePerformanceChartData = () => {
+    if (!selectedClienteId) return [];
+    const allSprints = getSprintsByCliente(selectedClienteId);
+    const completedSprints = allSprints.filter(s => !s.isActive && new Date(s.endDate) < new Date());
+    return completedSprints.map(sprint => {
+      const sprintTasks = getTasksBySprint(sprint.id);
+      const completedTasks = sprintTasks.filter(t => t.status === 'completed' && t.date);
+      const avgTime = completedTasks.length > 0
+        ? completedTasks.reduce((sum, t) => {
+            const start = new Date(sprint.startDate);
+            const end = new Date(t.date!);
+            const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+            return sum + days;
+          }, 0) / completedTasks.length
+        : 0;
+      return {
+        name: sprint.name,
+        avgTime: Math.round(avgTime * 10) / 10,
+      };
+    });
+  };
+
+  const { avgCompletionTime, completionRate } = calculatePerformanceMetrics();
+  const performanceChartData = calculatePerformanceChartData();
+
+  const getAlerts = () => {
+    const alerts = [];
+    if (sprintAtiva) {
+      const endDate = new Date(sprintAtiva.endDate);
+      const today = new Date();
+      const daysLeft = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysLeft <= 3 && daysLeft > 0) {
+        alerts.push(`Sprint ativa termina em ${daysLeft} dias.`);
+      } else if (daysLeft < 0) {
+        alerts.push('Sprint ativa já terminou!');
+      }
+    }
+    const overdueTasks = tasks.filter(t => t.status !== 'completed' && t.date && new Date(t.date) < new Date());
+    if (overdueTasks.length > 0) {
+      alerts.push(`${overdueTasks.length} tarefa(s) atrasada(s).`);
+    }
+    return alerts;
+  };
+
+  const alerts = getAlerts();
 
   const generateChartData = () => {
     if (!sprintAtiva) {
@@ -145,6 +244,19 @@ function DashboardContent() {
             </div>
           </div>
 
+          {alerts.length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-4 text-yellow-400">Alertas</h2>
+              <div className="space-y-2">
+                {alerts.map((alert, index) => (
+                  <div key={index} className="p-3 bg-yellow-900 bg-opacity-20 border border-yellow-600 rounded">
+                    <p className="text-yellow-200">{alert}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Client is selected via the sidebar menu; removed duplicate selector from dashboard */}
           {!selectedClienteId && (
             <div className="mb-6">
@@ -188,6 +300,48 @@ function DashboardContent() {
                       <p>Tarefas em Andamento: {tasks.filter(t => t.status === 'in-progress').length}</p>
                       <p>Tarefas Pendentes: {tasks.filter(t => t.status === 'pending').length}</p>
                     </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <h2 className="text-xl font-semibold mb-4">Velocidade da Equipe</h2>
+                    <div className="text-sm text-gray-400 mb-4">
+                      <p>Velocidade Média: {teamVelocity} tarefas por sprint</p>
+                      {teamVelocity === 0 && <p className="text-yellow-400">Nenhuma sprint completada ainda para calcular velocidade.</p>}
+                    </div>
+                    {velocityChartData.length > 0 && (
+                      <div className="w-full h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={velocityChartData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" />
+                            <YAxis />
+                            <Tooltip />
+                            <Bar dataKey="velocity" fill="#8884d8" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mb-6">
+                    <h2 className="text-xl font-semibold mb-4">Métricas de Performance</h2>
+                    <div className="text-sm text-gray-400 mb-4 space-y-1">
+                      <p>Tempo Médio de Conclusão: {avgCompletionTime} dias</p>
+                      <p>Taxa de Conclusão Geral: {completionRate}%</p>
+                    </div>
+                    {performanceChartData.length > 0 && (
+                      <div className="w-full h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={performanceChartData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" />
+                            <YAxis />
+                            <Tooltip />
+                            <Line type="monotone" dataKey="avgTime" stroke="#8884d8" strokeWidth={2} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
                   </div>
                 </>
               )}
