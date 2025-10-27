@@ -264,7 +264,7 @@ function DashboardContent() {
   };
 
   return (
-    <div className="p-6">
+    <div className="">
       <div className="max-w-6xl mx-auto">
          
         <div className="card">

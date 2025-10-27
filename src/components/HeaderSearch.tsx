@@ -121,7 +121,7 @@ export default function HeaderSearch() {
   let flatCounter = 0;
 
   return (
-    <div ref={wrapperRef} style={{ position: 'relative' }} className="w-full max-w-[720px]">
+    <div ref={wrapperRef} style={{ position: 'relative' }} className="w-full">
       <input
         ref={inputRef}
         className="search-input"
