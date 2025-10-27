@@ -2,7 +2,8 @@
   "clientes": [
     {
       "nome": "bat",
-      "id": "258d3410-653f-48bc-954c-d4011be56fe9"
+      "id": "258d3410-653f-48bc-954c-d4011be56fe9",
+      "sprintAtiva": "645d45ac-ee05-459c-84f6-f60c0ca46777"
     },
     {
       "nome": "Nova singular ",
@@ -33,7 +34,8 @@
       "startDate": "2025-10-27",
       "endDate": "2025-10-31",
       "totalTasks": 10,
-      "isActive": false,
+      "isActive": true,
+      "status": "in-progress",
       "id": "645d45ac-ee05-459c-84f6-f60c0ca46777"
     }
   ],
@@ -41,62 +43,92 @@
     {
       "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
       "description": "test1",
-      "status": "pending",
-      "id": "828922de-fd67-41a1-ad9b-4afe3c972a61"
+      "status": "completed",
+      "id": "828922de-fd67-41a1-ad9b-4afe3c972a61",
+      "assignee": "Persio de Paula Godoy",
+      "date": "2025-10-27",
+      "timeSpent": 3
     },
     {
       "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
       "description": "test2",
-      "status": "pending",
-      "id": "5142158a-3d7d-43a0-8608-9facff92645b"
+      "status": "completed",
+      "id": "5142158a-3d7d-43a0-8608-9facff92645b",
+      "assignee": "Persio de Paula Godoy",
+      "date": "2025-10-27",
+      "timeSpent": 3
     },
     {
       "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
       "description": "test3",
-      "status": "pending",
-      "id": "7cee4be7-8840-46ca-96a2-e68fad37e0fc"
+      "status": "completed",
+      "id": "7cee4be7-8840-46ca-96a2-e68fad37e0fc",
+      "assignee": "Persio de Paula Godoy",
+      "date": "2025-10-28",
+      "timeSpent": 3
     },
     {
       "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
       "description": "test4",
-      "status": "pending",
-      "id": "13ff8a0f-9e90-49d3-a29c-ccc34c86e801"
+      "status": "completed",
+      "id": "13ff8a0f-9e90-49d3-a29c-ccc34c86e801",
+      "assignee": "Persio de Paula Godoy",
+      "date": "2025-10-28",
+      "timeSpent": 3
     },
     {
       "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
       "description": "test5",
-      "status": "pending",
-      "id": "2e8177e7-6ec9-4358-a114-b5231501b24a"
+      "status": "completed",
+      "id": "2e8177e7-6ec9-4358-a114-b5231501b24a",
+      "assignee": "Persio de Paula Godoy",
+      "date": "2025-10-29",
+      "timeSpent": 3
     },
     {
       "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
       "description": "test6",
-      "status": "pending",
-      "id": "be278c48-10d0-41c8-8b18-4ea674c5fe6b"
+      "status": "completed",
+      "id": "be278c48-10d0-41c8-8b18-4ea674c5fe6b",
+      "assignee": "Persio de Paula Godoy",
+      "date": "2025-10-29",
+      "timeSpent": 3
     },
     {
       "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
       "description": "test7",
-      "status": "pending",
-      "id": "84d7e7d5-1cd3-4a86-8ea3-3ca88867c39f"
+      "status": "completed",
+      "id": "84d7e7d5-1cd3-4a86-8ea3-3ca88867c39f",
+      "assignee": "Persio de Paula Godoy",
+      "date": "2025-10-30",
+      "timeSpent": 3
     },
     {
       "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
       "description": "test8",
-      "status": "pending",
-      "id": "d8ebea65-9ac5-4ace-9bd3-c7b6ea945830"
+      "status": "completed",
+      "id": "d8ebea65-9ac5-4ace-9bd3-c7b6ea945830",
+      "assignee": "Persio de Paula Godoy",
+      "date": "2025-10-30",
+      "timeSpent": 2
     },
     {
       "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
       "description": "test9",
-      "status": "pending",
-      "id": "aa4c2738-b37a-4710-b8b1-8073ac3cfec2"
+      "status": "completed",
+      "id": "aa4c2738-b37a-4710-b8b1-8073ac3cfec2",
+      "assignee": "Persio de Paula Godoy",
+      "date": "2025-10-31",
+      "timeSpent": 3
     },
     {
       "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
       "description": "test10",
-      "status": "pending",
-      "id": "dfa6c4da-edce-479c-b6bd-b44b1b6efad8"
+      "status": "completed",
+      "id": "dfa6c4da-edce-479c-b6bd-b44b1b6efad8",
+      "assignee": "Persio de Paula Godoy",
+      "date": "2025-10-31",
+      "timeSpent": 3
     }
   ]
 }

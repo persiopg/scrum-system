@@ -16,6 +16,7 @@ export default function CreateSprintPage() {
   const [tasks, setTasks] = useState<string[]>(['']); // Array de descrições de tarefas
   const [selectedClienteId, setSelectedClienteId] = useState<string>(clienteIdFromUrl || '');
   const [ativarSprint, setAtivarSprint] = useState(false);
+  const [status, setStatus] = useState<string>('planned');
 
   const selectedCliente = selectedClienteId ? clientes.find(c => c.id === selectedClienteId) : null;
 
@@ -46,7 +47,7 @@ export default function CreateSprintPage() {
       }
 
       // Criar nova sprint
-      const sprint = await addSprint({ clienteId: selectedCliente.id, name, startDate, endDate, totalTasks: tasks.filter(t => t.trim()).length, isActive: ativarSprint });
+  const sprint = await addSprint({ clienteId: selectedCliente.id, name, startDate, endDate, totalTasks: tasks.filter(t => t.trim()).length, isActive: ativarSprint, status });
       console.log('Sprint created:', sprint);
 
       // Adicionar tarefas ao sprint em lote
@@ -159,6 +160,20 @@ export default function CreateSprintPage() {
                   />
                   Ativar esta sprint após criar
                 </label>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Status da Sprint</label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                >
+                  <option value="planned">Planejada</option>
+                  <option value="in-progress">Em Progresso</option>
+                  <option value="completed">Concluída</option>
+                  <option value="cancelled">Cancelada</option>
+                </select>
               </div>
 
               <button

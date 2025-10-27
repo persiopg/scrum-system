@@ -10,6 +10,8 @@ export interface Sprint {
   endDate: string;
   totalTasks: number;
   isActive: boolean;
+  // New: more descriptive status for the sprint (kept as string for backwards compatibility)
+  status?: string;
 }
 
 export interface Task {
@@ -114,7 +116,16 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
       .then(data => {
         if (data.clientes) setClientes(data.clientes);
         if (data.executores) setExecutores(data.executores);
-        if (data.sprints) setSprints(data.sprints);
+        if (data.sprints) {
+          // Backwards-compatible: ensure status exists on each sprint
+          const normalizedSprints = data.sprints.map((s: any) => {
+            const raw = s.status;
+            const allowed = ['planned', 'in-progress', 'completed', 'cancelled'];
+            const status = (typeof raw === 'string' && allowed.includes(raw)) ? raw : (s.isActive ? 'in-progress' : 'planned');
+            return { ...s, status } as Sprint;
+          });
+          setSprints(normalizedSprints);
+        }
         if (data.tasks) setTasks(data.tasks);
 
         // Corrigir dados: definir sprintAtiva e garantir apenas uma ativa por cliente
@@ -133,7 +144,11 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
             if (activeSprints.length > 1 && sprint.id !== activeSprints[0].id && sprint.isActive) {
               return { ...sprint, isActive: false };
             }
-            return sprint;
+            // Ensure status consistency: if sprint isActive then status -> in-progress
+            const raw = sprint.status;
+            const allowed = ['planned', 'in-progress', 'completed', 'cancelled'];
+            const status = (typeof raw === 'string' && allowed.includes(raw)) ? raw : (sprint.isActive ? 'in-progress' : 'planned');
+            return { ...sprint, status } as Sprint;
           });
           setSprints(correctedSprints);
         }
@@ -211,7 +226,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
   };
 
   const addSprint = async (sprint: Omit<Sprint, 'id'>) => {
-    const newSprint: Sprint = { ...sprint, id: generateId() };
+    const newSprint: Sprint = { ...sprint, id: generateId(), status: sprint.status ? sprint.status : (sprint.isActive ? 'in-progress' : 'planned') };
     console.log('Adding sprint:', newSprint);
     const newSprints = [...sprintsRef.current, newSprint];
     sprintsRef.current = newSprints;
@@ -256,7 +271,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
     setClientes(newClientes);
     const newSprints = sprintsRef.current.map(sprint =>
       sprint.clienteId === clienteId
-        ? { ...sprint, isActive: sprint.id === sprintId }
+        ? { ...sprint, isActive: sprint.id === sprintId, status: sprint.id === sprintId ? 'in-progress' : (sprint.status ? sprint.status : 'planned') }
         : sprint
     );
     sprintsRef.current = newSprints;
@@ -279,7 +294,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
       clientesRef.current = newClientes;
       setClientes(newClientes);
       const newSprints = sprintsRef.current.map(s =>
-        s.id === sprintId ? { ...s, isActive: false } : s
+        s.id === sprintId ? { ...s, isActive: false, status: 'planned' } : s
       );
       sprintsRef.current = newSprints;
       setSprints(newSprints);

@@ -147,10 +147,17 @@ export default function SprintPage() {
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-white truncate">{sprint.name}</p>
                         <div className="mt-1">
+                          {/* Show descriptive status */}
                           <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${
-                            sprint.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                            sprint.status === 'in-progress' ? 'bg-green-100 text-green-800' :
+                            sprint.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                            sprint.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
                           }`}>
-                            {sprint.isActive ? 'Ativa' : 'Inativa'}
+                            {sprint.status === 'in-progress' ? 'Em Progresso' :
+                             sprint.status === 'completed' ? 'Concluída' :
+                             sprint.status === 'cancelled' ? 'Cancelada' :
+                             'Planejada'}
                           </span>
                         </div>
                       </div>
