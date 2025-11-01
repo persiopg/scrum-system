@@ -6,9 +6,10 @@ import { BurndownChart } from '@/components/BurndownChart';
 import { TaskStatusChart } from '@/components/TaskStatusChart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { useScrum } from '@/context/ScrumContext';
+import type { Sprint } from '@/context/ScrumContext';
 
 function DashboardContent() {
-  const { getClienteById, getSprintsByCliente, getTasksBySprint, exportData, importData, selectedClienteId, sprints: allSprints } = useScrum();
+  const { getClienteById, getSprintsByCliente, getTasksBySprint, exportData, importData, selectedClienteId, sprints: allSprints, clientes } = useScrum();
   const [report, setReport] = useState<string | null>(null);
 
   const selectedCliente = selectedClienteId ? getClienteById(selectedClienteId) : null;
@@ -16,26 +17,78 @@ function DashboardContent() {
   const sprintAtiva = selectedCliente?.sprintAtiva ? sprintsCliente.find(s => s.id === selectedCliente.sprintAtiva && s.isActive) : null;
   const tasks = sprintAtiva ? getTasksBySprint(sprintAtiva.id) : [];
 
+  const [reportPreferences, setReportPreferences] = useState<Record<string, { base: string; comparisons: string[] }>>({});
+
+  const currentPreferences = selectedClienteId ? reportPreferences[selectedClienteId] : undefined;
+  const defaultBaseSprintId = selectedClienteId ? (sprintAtiva?.id ?? sprintsCliente[0]?.id ?? 'all') : 'all';
+  const baseSprintSelection = currentPreferences?.base && (currentPreferences.base === 'all' || sprintsCliente.some(s => s.id === currentPreferences.base))
+    ? currentPreferences.base
+    : defaultBaseSprintId;
+  const comparisonSprintSelection = currentPreferences?.comparisons
+    ?.filter(id => id !== baseSprintSelection && sprintsCliente.some(s => s.id === id)) ?? [];
+
+  const handleBaseSprintSelect = (value: string) => {
+    if (!selectedClienteId) return;
+    const sanitizedBase = value === 'all' || sprintsCliente.some(s => s.id === value) ? value : defaultBaseSprintId;
+    setReportPreferences(prev => {
+      const prevForClient = prev[selectedClienteId] ?? { base: baseSprintSelection, comparisons: [] };
+      const filteredComparisons = sanitizedBase === 'all'
+        ? []
+        : prevForClient.comparisons.filter(id => id !== sanitizedBase && sprintsCliente.some(s => s.id === id));
+      return {
+        ...prev,
+        [selectedClienteId]: {
+          base: sanitizedBase,
+          comparisons: filteredComparisons,
+        },
+      };
+    });
+  };
+
+  const toggleComparisonSprint = (sprintId: string) => {
+    if (!selectedClienteId) return;
+    if (!sprintsCliente.some(s => s.id === sprintId)) return;
+    const effectiveBase = baseSprintSelection;
+    if (effectiveBase === 'all') return;
+    if (sprintId === effectiveBase) return;
+
+    setReportPreferences(prev => {
+      const prevForClient = prev[selectedClienteId] ?? { base: effectiveBase, comparisons: [] };
+      const alreadySelected = prevForClient.comparisons.includes(sprintId);
+      const sanitizedComparisons = prevForClient.comparisons.filter(id => id !== effectiveBase && sprintsCliente.some(s => s.id === id));
+      const nextComparisons = alreadySelected
+        ? sanitizedComparisons.filter(id => id !== sprintId)
+        : [...sanitizedComparisons, sprintId];
+      return {
+        ...prev,
+        [selectedClienteId]: {
+          base: prevForClient.base ?? effectiveBase,
+          comparisons: nextComparisons,
+        },
+      };
+    });
+  };
+
   const activeSprintsData = !selectedClienteId
     ? allSprints
         .filter(s => s.isActive)
         .map(sprint => {
-          const tasks = getTasksBySprint(sprint.id);
-          const completedTasks = tasks.filter(t => t.status === 'completed').length;
+          const sprintTasks = getTasksBySprint(sprint.id);
+          const completedTasks = sprintTasks.filter(t => t.status === 'completed').length;
           const cliente = getClienteById(sprint.clienteId);
           return {
             name: `${cliente?.nome?.split(' ')[0] ?? 'Cliente'} - ${sprint.name}`,
-            total: sprint.totalTasks || tasks.length,
+            total: sprint.totalTasks || sprintTasks.length,
             concluidas: completedTasks,
-            pendentes: (sprint.totalTasks || tasks.length) - completedTasks,
+            pendentes: (sprint.totalTasks || sprintTasks.length) - completedTasks,
           };
         })
     : [];
 
-  const calculateTeamVelocity = () => {
-    if (!selectedClienteId) return 0;
-    const allSprints = getSprintsByCliente(selectedClienteId);
-    const completedSprints = allSprints.filter(s => !s.isActive && new Date(s.endDate) < new Date());
+  const calculateTeamVelocity = (clienteId?: string | null, sprintsOverride?: Sprint[]) => {
+    const targetSprints = sprintsOverride ?? (clienteId ? getSprintsByCliente(clienteId) : allSprints);
+    if (!targetSprints || targetSprints.length === 0) return 0;
+    const completedSprints = targetSprints.filter(s => !s.isActive && !!s.endDate && new Date(s.endDate) < new Date());
     if (completedSprints.length === 0) return 0;
     const totalCompletedTasks = completedSprints.reduce((sum, sprint) => {
       const sprintTasks = getTasksBySprint(sprint.id);
@@ -44,10 +97,10 @@ function DashboardContent() {
     return Math.round(totalCompletedTasks / completedSprints.length);
   };
 
-  const calculateVelocityChartData = () => {
-    if (!selectedClienteId) return [];
-    const allSprints = getSprintsByCliente(selectedClienteId);
-    const completedSprints = allSprints.filter(s => !s.isActive && new Date(s.endDate) < new Date());
+  const calculateVelocityChartData = (clienteId?: string | null) => {
+    if (!clienteId) return [];
+    const clienteSprints = getSprintsByCliente(clienteId);
+    const completedSprints = clienteSprints.filter(s => !s.isActive && !!s.endDate && new Date(s.endDate) < new Date());
     return completedSprints.map(sprint => {
       const sprintTasks = getTasksBySprint(sprint.id);
       const completedTasks = sprintTasks.filter(t => t.status === 'completed').length;
@@ -58,36 +111,44 @@ function DashboardContent() {
     });
   };
 
-  const teamVelocity = calculateTeamVelocity();
-  const velocityChartData = calculateVelocityChartData();
+  const teamVelocity = calculateTeamVelocity(selectedClienteId);
+  const velocityChartData = calculateVelocityChartData(selectedClienteId);
 
-  const calculatePerformanceMetrics = () => {
-    if (!selectedClienteId) return { avgCompletionTime: 0, completionRate: 0 };
-    const allSprints = getSprintsByCliente(selectedClienteId);
-    const allTasks = allSprints.flatMap(sprint => getTasksBySprint(sprint.id));
-    const completedTasks = allTasks.filter(t => t.status === 'completed');
-    const completionRate = allTasks.length > 0 ? (completedTasks.length / allTasks.length) * 100 : 0;
+  const calculatePerformanceMetrics = (clienteId?: string | null, sprintsOverride?: Sprint[]) => {
+    const targetSprints = sprintsOverride ?? (clienteId ? getSprintsByCliente(clienteId) : allSprints);
+    if (!targetSprints || targetSprints.length === 0) {
+      return { avgCompletionTime: 0, completionRate: 0 };
+    }
+    const tasksForScope = targetSprints.flatMap(sprint => getTasksBySprint(sprint.id));
+    if (tasksForScope.length === 0) {
+      return { avgCompletionTime: 0, completionRate: 0 };
+    }
+    const completedTasks = tasksForScope.filter(t => t.status === 'completed');
+    const completionRate = tasksForScope.length > 0 ? (completedTasks.length / tasksForScope.length) * 100 : 0;
 
-    // Calcular tempo médio de conclusão (dias)
     const tasksWithTime = completedTasks.filter(t => t.date);
     const avgCompletionTime = tasksWithTime.length > 0
       ? tasksWithTime.reduce((sum, t) => {
-          const sprint = allSprints.find(s => s.id === t.sprintId);
+          const sprint = targetSprints.find(s => s.id === t.sprintId);
           if (!sprint) return sum;
           const start = new Date(sprint.startDate);
           const end = new Date(t.date!);
+          if (isNaN(start.getTime()) || isNaN(end.getTime())) return sum;
           const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
           return sum + days;
         }, 0) / tasksWithTime.length
       : 0;
 
-    return { avgCompletionTime: Math.round(avgCompletionTime * 10) / 10, completionRate: Math.round(completionRate * 10) / 10 };
+    return {
+      avgCompletionTime: Math.round(avgCompletionTime * 10) / 10,
+      completionRate: Math.round(completionRate * 10) / 10,
+    };
   };
 
-  const calculatePerformanceChartData = () => {
-    if (!selectedClienteId) return [];
-    const allSprints = getSprintsByCliente(selectedClienteId);
-    const completedSprints = allSprints.filter(s => !s.isActive && new Date(s.endDate) < new Date());
+  const calculatePerformanceChartData = (clienteId?: string | null) => {
+    if (!clienteId) return [];
+    const clienteSprints = getSprintsByCliente(clienteId);
+    const completedSprints = clienteSprints.filter(s => !s.isActive && !!s.endDate && new Date(s.endDate) < new Date());
     return completedSprints.map(sprint => {
       const sprintTasks = getTasksBySprint(sprint.id);
       const completedTasks = sprintTasks.filter(t => t.status === 'completed' && t.date);
@@ -95,6 +156,7 @@ function DashboardContent() {
         ? completedTasks.reduce((sum, t) => {
             const start = new Date(sprint.startDate);
             const end = new Date(t.date!);
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) return sum;
             const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
             return sum + days;
           }, 0) / completedTasks.length
@@ -106,8 +168,8 @@ function DashboardContent() {
     });
   };
 
-  const { avgCompletionTime, completionRate } = calculatePerformanceMetrics();
-  const performanceChartData = calculatePerformanceChartData();
+  const { avgCompletionTime, completionRate } = calculatePerformanceMetrics(selectedClienteId);
+  const performanceChartData = calculatePerformanceChartData(selectedClienteId);
 
   const getAlerts = () => {
     const alerts = [];
@@ -131,25 +193,125 @@ function DashboardContent() {
   const alerts = getAlerts();
 
   const handleGenerateReport = async () => {
-    if (!selectedClienteId) {
-      alert('Selecione um cliente primeiro.');
-      return;
-    }
+    const summarizeSprint = (sprint: Sprint) => {
+      const sprintTasks = getTasksBySprint(sprint.id);
+      const completed = sprintTasks.filter(t => t.status === 'completed').length;
+      const inProgress = sprintTasks.filter(t => t.status === 'in-progress').length;
+      const pending = sprintTasks.filter(t => t.status === 'pending').length;
+      const hours = Math.round(sprintTasks.reduce((sum, task) => sum + (task.timeSpent ?? 0), 0) * 10) / 10;
 
-    const cliente = getClienteById(selectedClienteId);
-    const sprints = getSprintsByCliente(selectedClienteId);
-    const tasks = sprints.flatMap(sprint => getTasksBySprint(sprint.id));
-    const metrics = {
-      teamVelocity,
-      avgCompletionTime,
-      completionRate,
+      return {
+        id: sprint.id,
+        clienteId: sprint.clienteId,
+        name: sprint.name,
+        startDate: sprint.startDate,
+        endDate: sprint.endDate,
+        isActive: sprint.isActive,
+        totalTasks: sprintTasks.length,
+        completedTasks: completed,
+        inProgressTasks: inProgress,
+        pendingTasks: pending,
+        totalHoursSpent: hours,
+      };
     };
 
+    const compileMetrics = (scopeSprints: Sprint[], clienteId?: string | null) => {
+      const sprintMetrics = calculatePerformanceMetrics(clienteId, scopeSprints);
+      const velocity = calculateTeamVelocity(clienteId, scopeSprints);
+      const tasksForScope = scopeSprints.flatMap(sprint => getTasksBySprint(sprint.id));
+      const totalHoursSpent = Math.round(tasksForScope.reduce((sum, task) => sum + (task.timeSpent ?? 0), 0) * 10) / 10;
+
+      return {
+        metrics: {
+          ...sprintMetrics,
+          teamVelocity: velocity,
+          totalHoursSpent,
+        },
+        tasks: tasksForScope,
+      };
+    };
+
+    let payload: Record<string, unknown>;
+
+    if (!selectedClienteId) {
+      const scopeSprints = allSprints;
+      const { metrics, tasks: globalTasks } = compileMetrics(scopeSprints);
+
+      payload = {
+        scope: 'global',
+        clientes,
+        sprints: scopeSprints.map(summarizeSprint),
+        tasks: globalTasks,
+        metrics,
+        totals: {
+          totalClientes: clientes.length,
+          totalSprints: scopeSprints.length,
+          totalTasks: globalTasks.length,
+        },
+      };
+    } else {
+      const cliente = getClienteById(selectedClienteId);
+      if (!cliente) {
+        alert('Cliente selecionado não encontrado.');
+        return;
+      }
+
+      const baseSelection = baseSprintSelection;
+      const comparisonSelections = baseSelection === 'all' ? [] : comparisonSprintSelection;
+
+      let scopedSprints: Sprint[];
+      if (baseSelection === 'all') {
+        scopedSprints = sprintsCliente;
+      } else {
+        const baseSprint = sprintsCliente.find(s => s.id === baseSelection);
+        const comparisonSprints = sprintsCliente.filter(s => comparisonSelections.includes(s.id));
+        const uniqueEntries = new Map<string, Sprint>();
+        if (baseSprint) uniqueEntries.set(baseSprint.id, baseSprint);
+        comparisonSprints.forEach(s => uniqueEntries.set(s.id, s));
+        scopedSprints = Array.from(uniqueEntries.values());
+        if (scopedSprints.length === 0 && baseSprint) {
+          scopedSprints = [baseSprint];
+        }
+        if (scopedSprints.length === 0) {
+          scopedSprints = sprintsCliente;
+        }
+      }
+
+      const { metrics, tasks: scopedTasks } = compileMetrics(scopedSprints, selectedClienteId);
+
+      const baseSummary = baseSelection === 'all'
+        ? null
+        : (() => {
+            const sprint = sprintsCliente.find(s => s.id === baseSelection);
+            return sprint ? summarizeSprint(sprint) : null;
+          })();
+
+      const comparisonSummaries = comparisonSelections
+        .map(id => {
+          const sprint = sprintsCliente.find(s => s.id === id);
+          return sprint ? summarizeSprint(sprint) : null;
+        })
+        .filter((summary): summary is ReturnType<typeof summarizeSprint> => summary !== null);
+
+      payload = {
+        scope: 'cliente',
+        cliente,
+        baseSprintId: baseSelection === 'all' ? null : baseSelection,
+        baseSprintSummary: baseSummary,
+        comparisonSprintIds: comparisonSelections,
+        comparisonSummaries,
+        sprints: scopedSprints.map(summarizeSprint),
+        tasks: scopedTasks,
+        metrics,
+      };
+    }
+
     try {
+      setReport(null);
       const response = await fetch('/api/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: { cliente, sprints, tasks, metrics } }),
+        body: JSON.stringify({ data: payload }),
       });
 
       if (response.ok) {
@@ -414,6 +576,53 @@ function DashboardContent() {
           {/* Nova seção para relatório com IA */}
           <div className="mb-6">
             <h2 className="text-xl font-semibold mb-4">Relatório com IA</h2>
+            {!selectedCliente && (
+              <p className="muted mb-4 text-sm">Nenhum cliente selecionado. O relatório trará um panorama geral com todas as sprints, tarefas e horas registradas.</p>
+            )}
+            {selectedCliente && (
+              <div className="mb-4 space-y-4 text-left">
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Sprint base para o relatório</label>
+                  <select
+                    value={baseSprintSelection}
+                    onChange={(event) => handleBaseSprintSelect(event.target.value)}
+                    className="w-full rounded bg-[rgba(255,255,255,0.08)] px-3 py-2 text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="all">Todas as sprints do cliente</option>
+                    {sprintsCliente.map(sprint => (
+                      <option key={sprint.id} value={sprint.id}>{sprint.name}</option>
+                    ))}
+                  </select>
+                  <p className="muted text-xs mt-2">Escolha a sprint principal que servirá de referência para o relatório.</p>
+                </div>
+                {sprintsCliente.length > 0 && baseSprintSelection !== 'all' ? (
+                  <div>
+                    <p className="text-sm text-gray-300 mb-2">Comparar com outras sprints deste cliente:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {sprintsCliente.filter(sprint => sprint.id !== baseSprintSelection).map(sprint => {
+                        const checked = comparisonSprintSelection.includes(sprint.id);
+                        return (
+                          <label key={sprint.id} className={`flex items-center gap-2 px-3 py-2 rounded border border-white/10 cursor-pointer transition ${checked ? 'bg-purple-600/40' : 'bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)]'}`}>
+                            <input
+                              type="checkbox"
+                              className="accent-purple-500"
+                              checked={checked}
+                              onChange={() => toggleComparisonSprint(sprint.id)}
+                            />
+                            <span className="text-sm">{sprint.name}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {sprintsCliente.filter(s => s.id !== baseSprintSelection).length === 0 && (
+                      <p className="muted text-xs mt-2">Não há outras sprints para comparar.</p>
+                    )}
+                  </div>
+                ) : selectedCliente && sprintsCliente.length > 0 ? (
+                  <p className="text-sm text-gray-400">Selecione uma sprint específica para habilitar comparações.</p>
+                ) : null}
+              </div>
+            )}
             <button
               onClick={handleGenerateReport}
               style={{background: 'linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%)'}}
