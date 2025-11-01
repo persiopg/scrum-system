@@ -1,134 +1,110 @@
 {
   "clientes": [
     {
-      "nome": "bat",
-      "id": "258d3410-653f-48bc-954c-d4011be56fe9",
-      "sprintAtiva": "645d45ac-ee05-459c-84f6-f60c0ca46777"
+      "id": "f1e1cd79-966c-4342-ad4a-d2ba1636559e",
+      "nome": "Tech Solutions Inc",
+      "sprintAtiva": "353e0057-73d7-497b-9300-7b4d7b0721b3"
     },
     {
-      "nome": "Nova singular ",
-      "id": "c28e2fe3-6662-4025-90ff-7e9b27a7a295"
+      "id": "09714b13-245a-4f49-8715-1b5a3366a08f",
+      "nome": "Digital Innovations Ltd",
+      "sprintAtiva": "c8e03d0d-278e-4879-9af4-1b3d214aa1b4"
     }
   ],
   "executores": [
     {
-      "nome": "Persio de Paula Godoy",
-      "cargo": "DEV",
-      "id": "cd5fcfb5-ac5e-48ca-abca-88698880fa63"
+      "id": "7df87eec-bcdf-4b9b-b0fa-f8ddea69829f",
+      "nome": "João Silva",
+      "cargo": "Frontend Developer"
     },
     {
-      "nome": "Quemoel",
-      "cargo": "DEV",
-      "id": "4c1523c3-b681-44b8-835d-720619383b99"
+      "id": "20763622-756d-4d20-bcce-c48b46fbea80",
+      "nome": "Maria Santos",
+      "cargo": "Backend Developer"
     },
     {
-      "nome": "Ricardo",
-      "cargo": "Fullstack",
-      "id": "93213c9f-d733-4fea-9a11-cc44f3dde4f0"
+      "id": "55d124ae-7089-4059-af07-c286c0151a2e",
+      "nome": "Pedro Costa",
+      "cargo": "Fullstack Developer"
     }
   ],
   "sprints": [
     {
-      "clienteId": "258d3410-653f-48bc-954c-d4011be56fe9",
-      "name": "teste",
-      "startDate": "2025-10-27",
-      "endDate": "2025-10-31",
-      "totalTasks": 10,
+      "id": "353e0057-73d7-497b-9300-7b4d7b0721b3",
+      "clienteId": "f1e1cd79-966c-4342-ad4a-d2ba1636559e",
+      "name": "Sprint 1 - Setup Inicial",
+      "startDate": "2025-11-03",
+      "endDate": "2025-11-17",
+      "totalTasks": 4,
       "isActive": true,
-      "status": "in-progress",
-      "id": "645d45ac-ee05-459c-84f6-f60c0ca46777"
+      "status": "in-progress"
+    },
+    {
+      "id": "1123544f-9fa0-4489-a8c2-37e6b527d771",
+      "clienteId": "f1e1cd79-966c-4342-ad4a-d2ba1636559e",
+      "name": "Sprint 2 - Desenvolvimento",
+      "startDate": "2025-11-17",
+      "endDate": "2025-12-01",
+      "totalTasks": 0,
+      "isActive": false,
+      "status": "planned"
+    },
+    {
+      "id": "c8e03d0d-278e-4879-9af4-1b3d214aa1b4",
+      "clienteId": "09714b13-245a-4f49-8715-1b5a3366a08f",
+      "name": "Sprint 1 - Prototipagem",
+      "startDate": "2025-11-03",
+      "endDate": "2025-11-10",
+      "totalTasks": 1,
+      "isActive": true,
+      "status": "in-progress"
     }
   ],
   "tasks": [
     {
-      "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
-      "description": "test1",
+      "id": "27dca000-308b-4f14-ac36-4d144a535fa8",
+      "sprintId": "353e0057-73d7-497b-9300-7b4d7b0721b3",
+      "description": "Configurar ambiente de desenvolvimento",
       "status": "completed",
-      "id": "828922de-fd67-41a1-ad9b-4afe3c972a61",
-      "assignee": "Persio de Paula Godoy",
-      "date": "2025-10-27",
-      "timeSpent": 3
+      "assignee": "João Silva",
+      "date": "2025-11-03",
+      "timeSpent": 4
     },
     {
-      "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
-      "description": "test2",
-      "status": "completed",
-      "id": "5142158a-3d7d-43a0-8608-9facff92645b",
-      "assignee": "Persio de Paula Godoy",
-      "date": "2025-10-27",
-      "timeSpent": 3
-    },
-    {
-      "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
-      "description": "test3",
-      "status": "completed",
-      "id": "7cee4be7-8840-46ca-96a2-e68fad37e0fc",
-      "assignee": "Persio de Paula Godoy",
-      "date": "2025-10-28",
-      "timeSpent": 3
-    },
-    {
-      "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
-      "description": "test4",
-      "status": "completed",
-      "id": "13ff8a0f-9e90-49d3-a29c-ccc34c86e801",
-      "assignee": "Persio de Paula Godoy",
-      "date": "2025-10-28",
-      "timeSpent": 3
-    },
-    {
-      "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
-      "description": "test5",
-      "status": "completed",
-      "id": "2e8177e7-6ec9-4358-a114-b5231501b24a",
-      "assignee": "Persio de Paula Godoy",
-      "date": "2025-10-29",
-      "timeSpent": 3
-    },
-    {
-      "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
-      "description": "test6",
-      "status": "completed",
-      "id": "be278c48-10d0-41c8-8b18-4ea674c5fe6b",
-      "assignee": "Persio de Paula Godoy",
-      "date": "2025-10-29",
-      "timeSpent": 3
-    },
-    {
-      "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
-      "description": "test7",
-      "status": "completed",
-      "id": "84d7e7d5-1cd3-4a86-8ea3-3ca88867c39f",
-      "assignee": "Persio de Paula Godoy",
-      "date": "2025-10-30",
-      "timeSpent": 3
-    },
-    {
-      "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
-      "description": "test8",
-      "status": "completed",
-      "id": "d8ebea65-9ac5-4ace-9bd3-c7b6ea945830",
-      "assignee": "Persio de Paula Godoy",
-      "date": "2025-10-30",
+      "id": "8eaa41be-e0e2-4f1d-a4fa-d80799959d0b",
+      "sprintId": "353e0057-73d7-497b-9300-7b4d7b0721b3",
+      "description": "Criar estrutura de pastas do projeto",
+      "status": "in-progress",
+      "assignee": "Pedro Costa",
+      "date": null,
       "timeSpent": 2
     },
     {
-      "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
-      "description": "test9",
-      "status": "completed",
-      "id": "aa4c2738-b37a-4710-b8b1-8073ac3cfec2",
-      "assignee": "Persio de Paula Godoy",
-      "date": "2025-10-31",
-      "timeSpent": 3
+      "id": "bf70311e-d08a-4478-b360-05e461330f5e",
+      "sprintId": "353e0057-73d7-497b-9300-7b4d7b0721b3",
+      "description": "Implementar componente Header",
+      "status": "pending",
+      "assignee": null,
+      "date": null,
+      "timeSpent": null
     },
     {
-      "sprintId": "645d45ac-ee05-459c-84f6-f60c0ca46777",
-      "description": "test10",
+      "id": "1ae5a22f-7b54-4577-b2e3-eafeb15572f6",
+      "sprintId": "353e0057-73d7-497b-9300-7b4d7b0721b3",
+      "description": "Configurar banco de dados",
+      "status": "pending",
+      "assignee": "Maria Santos",
+      "date": null,
+      "timeSpent": null
+    },
+    {
+      "id": "2430388a-767f-4dc8-b2c9-2c16451adc3b",
+      "sprintId": "c8e03d0d-278e-4879-9af4-1b3d214aa1b4",
+      "description": "Criar wireframes",
       "status": "completed",
-      "id": "dfa6c4da-edce-479c-b6bd-b44b1b6efad8",
-      "assignee": "Persio de Paula Godoy",
-      "date": "2025-10-31",
-      "timeSpent": 3
+      "assignee": "João Silva",
+      "date": "2025-11-03",
+      "timeSpent": 8
     }
   ]
 }
