@@ -8,13 +8,29 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useScrum } from '@/context/ScrumContext';
 
 function DashboardContent() {
-  const { getClienteById, getSprintsByCliente, getTasksBySprint, exportData, importData, selectedClienteId } = useScrum();
+  const { getClienteById, getSprintsByCliente, getTasksBySprint, exportData, importData, selectedClienteId, sprints: allSprints } = useScrum();
   const [report, setReport] = useState<string | null>(null);
 
   const selectedCliente = selectedClienteId ? getClienteById(selectedClienteId) : null;
   const sprintsCliente = selectedClienteId ? getSprintsByCliente(selectedClienteId) : [];
   const sprintAtiva = selectedCliente?.sprintAtiva ? sprintsCliente.find(s => s.id === selectedCliente.sprintAtiva && s.isActive) : null;
   const tasks = sprintAtiva ? getTasksBySprint(sprintAtiva.id) : [];
+
+  const activeSprintsData = !selectedClienteId
+    ? allSprints
+        .filter(s => s.isActive)
+        .map(sprint => {
+          const tasks = getTasksBySprint(sprint.id);
+          const completedTasks = tasks.filter(t => t.status === 'completed').length;
+          const cliente = getClienteById(sprint.clienteId);
+          return {
+            name: `${cliente?.nome?.split(' ')[0] ?? 'Cliente'} - ${sprint.name}`,
+            total: sprint.totalTasks || tasks.length,
+            concluidas: completedTasks,
+            pendentes: (sprint.totalTasks || tasks.length) - completedTasks,
+          };
+        })
+    : [];
 
   const calculateTeamVelocity = () => {
     if (!selectedClienteId) return 0;
@@ -283,9 +299,32 @@ function DashboardContent() {
 
           {/* Client is selected via the sidebar menu; removed duplicate selector from dashboard */}
           {!selectedClienteId && (
-            <div className="mb-6">
-              <p className="muted">Nenhum cliente selecionado. Use o seletor no menu lateral para escolher um cliente.</p>
-              <Link href="/clients" className="text-blue-300 hover:underline">Gerenciar Clientes</Link>
+            <div className="mb-6 text-center">
+              <p className="muted mb-4">Para ver detalhes de uma sprint, selecione o cliente no menu lateral.</p>
+              <div className="card">
+                <h2 className="text-xl font-semibold mb-4">Comparativo de Sprints Ativas</h2>
+                {activeSprintsData.length > 0 ? (
+                  <div style={{ width: '100%', height: 300 }}>
+                    <ResponsiveContainer>
+                      <BarChart
+                        data={activeSprintsData}
+                        margin={{
+                          top: 20, right: 30, left: 20, bottom: 5,
+                        }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="concluidas" stackId="a" fill="#82ca9d" name="Concluídas" />
+                        <Bar dataKey="pendentes" stackId="a" fill="#8884d8" name="Pendentes" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <p>Nenhuma sprint ativa no momento.</p>
+                )}
+              </div>
             </div>
           )}
 
