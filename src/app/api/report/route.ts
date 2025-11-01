@@ -1,8 +1,6 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = process.env.GOOGLE_API_KEY;
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+export const runtime = "nodejs";
 
 type SprintData = {
   name?: string;
@@ -59,13 +57,10 @@ export async function POST(request: NextRequest) {
     const { data } = (await request.json()) as { data?: ReportData };
     const reportData = data ?? {};
 
-    // Tenta gerar o relatório com a IA; fallback assegura resposta
+    // Tenta gerar o relatório com IA local (Ollama); fallback assegura resposta
     try {
-      if (!genAI) {
-        throw new Error("GOOGLE_API_KEY não configurada");
-      }
-
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const baseUrl = process.env.OLLAMA_BASE_URL?.replace(/\/+$/, "") || "http://localhost:11434";
+      const model = process.env.OLLAMA_MODEL || "llama3.2:1b";
 
       const prompt = [
         "Analise os seguintes dados do sistema Scrum e gere um relatório executivo detalhado em português:",
@@ -90,16 +85,33 @@ export async function POST(request: NextRequest) {
         "Use português brasileiro para todo o conteúdo.",
         "Seja específico e use os dados fornecidos para fazer análises concretas.",
       ].join("\n");
+      // Chamada ao Ollama /api/generate (sem stream)
+      const resp = await fetch(`${baseUrl}/api/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model,
+          prompt,
+          stream: false,
+          options: {
+            temperature: 0.7,
+          },
+        }),
+      });
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const report = response.text();
-
-      if (report?.trim()) {
-        return NextResponse.json({ report });
+      if (!resp.ok) {
+        const text = await resp.text().catch(() => "");
+        throw new Error(`Falha no Ollama: ${resp.status} ${resp.statusText} - ${text}`);
       }
 
-      throw new Error("Resposta vazia da IA");
+      const json = (await resp.json()) as { response?: string };
+      const reportText = json?.response?.trim();
+
+      if (reportText) {
+        return NextResponse.json({ report: reportText });
+      }
+
+      throw new Error("Resposta vazia da IA local");
     } catch (aiError) {
       console.error("Erro na IA, usando relatório mock:", aiError);
 

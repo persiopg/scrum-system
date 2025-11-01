@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Scrum System (Next.js)
 
-## Getting Started
+Aplicação Next.js para gestão simples de sprints, tarefas e geração de relatório com IA.
 
-First, run the development server:
+### Como rodar (dev)
 
-```bash
+```powershell
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Usando IA local com Ollama
 
-## Learn More
+Esta app já está preparada para usar o Ollama local no endpoint `/api/report` (o botão "Gerar Relatório com IA" no dashboard chama essa rota).
 
-To learn more about Next.js, take a look at the following resources:
+- Endpoint do Ollama esperado: `http://localhost:11434`
+- Modelo padrão: `llama3.1`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Você pode personalizar via variáveis de ambiente. Copie o arquivo `.env.local.example` para `.env.local` e ajuste se desejar:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.1
+```
 
-## Deploy on Vercel
+### Passo a passo no Windows (PowerShell)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1) Instale o Ollama para Windows se ainda não tiver: https://ollama.com/download
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2) Baixe/rode um modelo (exemplo `llama3.1`):
+
+```powershell
+ollama run llama3.1
+```
+
+Isso fará o pull do modelo (primeira vez) e abrirá um REPL. Você pode fechar o REPL; o serviço continuará disponível em `http://localhost:11434` quando chamado pela API do app.
+
+3) (Opcional) Verifique conectividade com o script de teste:
+
+```powershell
+$env:OLLAMA_BASE_URL="http://localhost:11434"; $env:OLLAMA_MODEL="llama3.1"; npm run test:ollama
+```
+
+Se tudo certo, verá a lista de modelos instalados e uma resposta simples da IA.
+
+4) Rode a aplicação e gere o relatório no dashboard:
+
+```powershell
+npm run dev
+```
+
+Abra o dashboard, selecione cliente/sprints e clique em "Gerar Relatório com IA".
+
+### Como funciona por baixo dos panos
+
+A rota `src/app/api/report/route.ts`:
+
+- Monta um prompt com dados de sprints/tarefas e faz `POST` para `OLLAMA_BASE_URL/api/generate`.
+- Usa `stream: false` para resposta única (mais simples).
+- Se a IA falhar, retorna um relatório mock para não quebrar a UI.
+
+---
+
+## Scripts úteis
+
+- `npm run test:utils` – testa utilitários de tarefas.
+- `npm run test:ollama` – valida acesso ao Ollama local e faz uma geração curta.
+
+---
+
+## Deploy
+
+Para produção, garanta que as variáveis de ambiente do servidor estejam configuradas se for usar Ollama acessível pela rede. Caso contrário, o relatório cairá no fallback (mock).
