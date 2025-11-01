@@ -121,10 +121,10 @@ export default function HeaderSearch() {
   let flatCounter = 0;
 
   return (
-    <div ref={wrapperRef} style={{ position: 'relative' }} className="w-full max-w-[720px]">
+    <div ref={wrapperRef} style={{ position: 'relative' }} className="w-full px-6">
       <input
         ref={inputRef}
-        className="search-input"
+        className="search-input w-full"
         placeholder="Buscar clientes, sprints ou tarefas..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}

@@ -39,7 +39,7 @@ export default function RootLayout({
               <header className="topbar">
                 <div className="flex items-center gap-3 w-full">
                   <HeaderToggle />
-                  <div className="flex-1 w-full">
+                  <div className="mx-auto w-full">
                     <HeaderSearch />
                   </div>
                 </div>

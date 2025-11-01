@@ -6,12 +6,15 @@ import { useState } from 'react';
 import SwitchToggle from '@/components/SwitchToggle';
 
 export default function SprintPage() {
-  const { sprints, getClienteById, deleteSprint, updateSprint, clientes, toggleSprintActive } = useScrum();
+  const { sprints, getClienteById, deleteSprint, updateSprint, clientes, toggleSprintActive, selectedClienteId, getSprintsByCliente } = useScrum();
   const router = useRouter();
   const searchParams = useSearchParams();
   const editSprintId = searchParams.get('editSprintId');
 
   const editingSprint = editSprintId ? sprints.find(s => s.id === editSprintId) : null;
+
+  // Filtrar sprints pelo cliente selecionado
+  const filteredSprints = selectedClienteId ? getSprintsByCliente(selectedClienteId) : sprints;
 
   const [editName, setEditName] = useState(editingSprint?.name || '');
   const [editStartDate, setEditStartDate] = useState(editingSprint?.startDate || '');
@@ -136,9 +139,28 @@ export default function SprintPage() {
           </div>
 
           <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-4">Todas as Sprints</h2>
-            <ul role="list" className="divide-y divide-gray-200">
-              {sprints.map((sprint) => {
+            <h2 className="text-xl font-semibold mb-4">
+              {selectedClienteId ? 'Sprints do Cliente Selecionado' : 'Todas as Sprints'}
+            </h2>
+            {!selectedClienteId && (
+              <div className="mb-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
+                <p className="text-yellow-800 text-sm">
+                  💡 <strong>Dica:</strong> Selecione um cliente no menu lateral para ver apenas as sprints específicas desse cliente.
+                </p>
+              </div>
+            )}
+            {filteredSprints.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">
+                  {selectedClienteId 
+                    ? 'Nenhuma sprint encontrada para o cliente selecionado.' 
+                    : 'Nenhuma sprint cadastrada ainda.'
+                  }
+                </p>
+              </div>
+            ) : (
+              <ul role="list" className="divide-y divide-gray-200">
+                {filteredSprints.map((sprint) => {
                 const cliente = getClienteById(sprint.clienteId);
                 return (
                   <li key={sprint.id} className="py-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
@@ -172,6 +194,7 @@ export default function SprintPage() {
                 );
               })}
             </ul>
+            )}
           </div>
         </div>
       </div>

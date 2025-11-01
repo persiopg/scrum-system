@@ -265,8 +265,7 @@ function DashboardContent() {
 
   return (
     <div className="p-6">
-      <div className="max-w-6xl mx-auto">
-         
+      <div className="mx-auto"> 
         <div className="card">
           <div className="mb-6">
             <h2 className="text-xl font-semibold mb-4">Backup e Restauração</h2>
