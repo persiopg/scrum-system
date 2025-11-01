@@ -150,12 +150,10 @@ function DashboardContent() {
 
   const generateChartData = () => {
     if (!sprintAtiva) {
-      console.log('No sprintAtiva');
       return [];
     }
 
     if (!tasks || tasks.length === 0) {
-      console.log('No tasks available');
       return [];
     }
 
@@ -165,29 +163,21 @@ function DashboardContent() {
 
       // Validação das datas
       if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-        console.log('Invalid dates:', { startDate: sprintAtiva.startDate, endDate: sprintAtiva.endDate });
         return [];
       }
 
       const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-      console.log('Dates:', {
-        start: start.toISOString(),
-        end: end.toISOString(),
-        days,
-        startDate: sprintAtiva.startDate,
-        endDate: sprintAtiva.endDate
-      });
+      // Dates debug removed
 
       if (days <= 0 || days > 365) {
-        console.log('Invalid days range:', days);
         return [];
       }
 
       const data = [];
       const totalTasks = tasks.length;
 
-      console.log('Generating chart data:', { sprintAtiva, tasksCount: tasks.length, totalTasks, days });
+  // Generation debug removed
 
       for (let i = 0; i < days; i++) {
         const date = new Date(start);
@@ -226,8 +216,7 @@ function DashboardContent() {
         });
       }
 
-      console.log('Generated chart data:', data);
-      return data;
+  return data;
     } catch (error) {
       console.error('Error generating chart data:', error);
       return [];

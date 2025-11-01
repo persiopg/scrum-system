@@ -8,10 +8,8 @@ export async function GET() {
   try {
     if (fs.existsSync(dataFilePath)) {
       const data = fs.readFileSync(dataFilePath, 'utf8');
-      console.log('Loaded data:', data);
       return NextResponse.json(JSON.parse(data));
     } else {
-      console.log('File not found, returning empty');
       return NextResponse.json({ clientes: [], tasks: [] });
     }
   } catch (error) {
@@ -22,9 +20,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const data = await request.json();
-    console.log('Saving data:', data);
-    fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
+  const data = await request.json();
+  fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Failed to save data:', error);

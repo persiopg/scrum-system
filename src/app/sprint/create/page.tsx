@@ -36,9 +36,7 @@ export default function CreateSprintPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted');
-    console.log('Selected cliente:', selectedCliente);
-    console.log('Form data:', { name, startDate, endDate, tasks, selectedClienteId, ativarSprint });
+    // debug logs removed
 
     try {
       if (!selectedCliente) {
@@ -48,14 +46,13 @@ export default function CreateSprintPage() {
 
       // Criar nova sprint
   const sprint = await addSprint({ clienteId: selectedCliente.id, name, startDate, endDate, totalTasks: tasks.filter(t => t.trim()).length, isActive: ativarSprint, status });
-      console.log('Sprint created:', sprint);
 
       // Adicionar tarefas ao sprint em lote
       const tasksToAdd = tasks
         .filter(description => description.trim())
         .map(description => ({ sprintId: sprint.id, description, status: 'pending' as const }));
 
-      console.log('Tasks to add:', tasksToAdd);
+  // tasks debug removed
 
       if (tasksToAdd.length > 0) {
         await addTasks(tasksToAdd);

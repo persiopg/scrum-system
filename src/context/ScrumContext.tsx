@@ -180,7 +180,6 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
   // Save to API whenever state changes
   useEffect(() => {
     if (!isLoaded) return;
-    console.log('Saving with sprints:', sprintsRef.current);
     fetch('/api/data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -233,7 +232,6 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
 
   const addSprint = async (sprint: Omit<Sprint, 'id'>) => {
     const newSprint: Sprint = { ...sprint, id: generateId(), status: sprint.status ? sprint.status : (sprint.isActive ? 'in-progress' : 'planned') };
-    console.log('Adding sprint:', newSprint);
     const newSprints = [...sprintsRef.current, newSprint];
     sprintsRef.current = newSprints;
     setSprints(newSprints);

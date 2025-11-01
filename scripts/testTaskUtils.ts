@@ -5,7 +5,7 @@ function assert(cond: boolean, msg: string) {
 }
 
 function runTests() {
-  console.log('Running taskUtils tests...');
+  // debug logs removed
 
   const base: Task = {
     id: 't1',
@@ -29,7 +29,7 @@ function runTests() {
   const updated3 = applyTaskUpdates(baseWithDate, { status: 'completed' });
   assert(updated3.date === '2025-10-01', 'existing date should be preserved');
 
-  console.log('All taskUtils tests passed ✅');
+  // tests success log removed
 }
 
 try {

@@ -14,7 +14,7 @@ interface BurndownChartProps {
 }
 
 export function BurndownChart({ data }: BurndownChartProps) {
-  console.log('BurndownChart received data:', data);
+  // debug logs removed
 
   if (!data || data.length === 0) {
     return <div className="w-full h-96 flex items-center justify-center text-gray-500">Nenhum dado disponível para o gráfico</div>;

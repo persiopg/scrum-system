@@ -9,7 +9,7 @@
   }
 
   function runTests() {
-    console.log('Running JS taskUtils tests...');
+    // debug logs removed
 
     const base = {
       id: 't1',
@@ -30,7 +30,7 @@
     const updated3 = applyTaskUpdates(baseWithDate, { status: 'completed' });
     assert(updated3.date === '2025-10-01', 'existing date should be preserved');
 
-    console.log('All JS taskUtils tests passed ✅');
+  // tests success log removed
   }
 
   try {
