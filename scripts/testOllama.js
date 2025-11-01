@@ -1,5 +1,8 @@
 (async () => {
   try {
+    // Carregar variáveis de ambiente do .env.local
+    require('dotenv').config({ path: '.env.local' });
+
     const baseUrl = (process.env.OLLAMA_BASE_URL || 'http://localhost:11434').replace(/\/+$/, '');
     const model = process.env.OLLAMA_MODEL || 'llama3.1';
 
@@ -14,12 +17,12 @@
     const names = Array.isArray(tags?.models) ? tags.models.map(m => m.name).join(', ') : 'formato inesperado';
     console.log(`✓ Modelos instalados: ${names}`);
 
-    // 2) Gerar uma resposta curta
+    // 2) Gerar uma resposta curta sobre Scrum
     console.log(`▶ Solicitando geração com modelo: ${model}`);
     const genRes = await fetch(`${baseUrl}/api/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model, prompt: 'Responda apenas com: OK', stream: false })
+      body: JSON.stringify({ model, prompt: 'Explique em uma frase o que é Scrum.', stream: false })
     });
     if (!genRes.ok) {
       const text = await genRes.text().catch(() => '');
