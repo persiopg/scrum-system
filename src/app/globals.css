@@ -109,7 +109,10 @@
 .search-input{
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.04);
-  padding: 10px 14px;border-radius:10px;color:var(--muted);width:100%; 
+   padding: 10px 14px;
+  border-radius:10px;
+  color:var(--muted);
+  width:100%;  
 }
 
 /* Search dropdown */
@@ -117,12 +120,14 @@
   position: absolute;
   top: 100%;
   left: 0;
+  right: 0;
   margin-top: 8px;
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
   border: 1px solid var(--glass-border);
   box-shadow: 0 8px 30px rgba(2,6,23,0.6);
   border-radius: 10px;
-  width: min(720px, 95vw);
+  width: 100%;
+  max-width: 720px;
   max-height: 60vh;
   overflow: auto;
   z-index: 80;

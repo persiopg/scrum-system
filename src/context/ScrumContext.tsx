@@ -10,6 +10,8 @@ export interface Sprint {
   endDate: string;
   totalTasks: number;
   isActive: boolean;
+  // New: more descriptive status for the sprint (kept as string for backwards compatibility)
+  status?: string;
 }
 
 export interface Task {
@@ -114,7 +116,22 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
       .then(data => {
         if (data.clientes) setClientes(data.clientes);
         if (data.executores) setExecutores(data.executores);
-        if (data.sprints) setSprints(data.sprints);
+        if (data.sprints) {
+          // Backwards-compatible: ensure status exists on each sprint
+          const normalizedSprints = data.sprints.map((s: unknown) => {
+            let rawStatus: unknown = undefined;
+            let isActive: unknown = undefined;
+            if (typeof s === 'object' && s !== null) {
+              const obj = s as Record<string, unknown>;
+              rawStatus = obj['status'];
+              isActive = obj['isActive'];
+            }
+            const allowed = ['planned', 'in-progress', 'completed', 'cancelled'];
+            const status = (typeof rawStatus === 'string' && allowed.includes(rawStatus)) ? rawStatus as string : (isActive ? 'in-progress' : 'planned');
+            return { ...(s as object), status } as Sprint;
+          });
+          setSprints(normalizedSprints);
+        }
         if (data.tasks) setTasks(data.tasks);
 
         // Corrigir dados: definir sprintAtiva e garantir apenas uma ativa por cliente
@@ -133,7 +150,11 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
             if (activeSprints.length > 1 && sprint.id !== activeSprints[0].id && sprint.isActive) {
               return { ...sprint, isActive: false };
             }
-            return sprint;
+            // Ensure status consistency: if sprint isActive then status -> in-progress
+            const raw = sprint.status;
+            const allowed = ['planned', 'in-progress', 'completed', 'cancelled'];
+            const status = (typeof raw === 'string' && allowed.includes(raw)) ? raw : (sprint.isActive ? 'in-progress' : 'planned');
+            return { ...sprint, status } as Sprint;
           });
           setSprints(correctedSprints);
         }
@@ -211,7 +232,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
   };
 
   const addSprint = async (sprint: Omit<Sprint, 'id'>) => {
-    const newSprint: Sprint = { ...sprint, id: generateId() };
+    const newSprint: Sprint = { ...sprint, id: generateId(), status: sprint.status ? sprint.status : (sprint.isActive ? 'in-progress' : 'planned') };
     console.log('Adding sprint:', newSprint);
     const newSprints = [...sprintsRef.current, newSprint];
     sprintsRef.current = newSprints;
@@ -256,7 +277,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
     setClientes(newClientes);
     const newSprints = sprintsRef.current.map(sprint =>
       sprint.clienteId === clienteId
-        ? { ...sprint, isActive: sprint.id === sprintId }
+        ? { ...sprint, isActive: sprint.id === sprintId, status: sprint.id === sprintId ? 'in-progress' : (sprint.status ? sprint.status : 'planned') }
         : sprint
     );
     sprintsRef.current = newSprints;
@@ -279,7 +300,7 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
       clientesRef.current = newClientes;
       setClientes(newClientes);
       const newSprints = sprintsRef.current.map(s =>
-        s.id === sprintId ? { ...s, isActive: false } : s
+        s.id === sprintId ? { ...s, isActive: false, status: 'planned' } : s
       );
       sprintsRef.current = newSprints;
       setSprints(newSprints);
@@ -299,7 +320,17 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
 
   const addTask = (task: Omit<Task, 'id'>) => {
     const newTask: Task = { ...task, id: generateId() };
-    setTasks(prevTasks => [...prevTasks, newTask]);
+    const newTasksArray = [...tasksRef.current, newTask];
+    tasksRef.current = newTasksArray;
+    setTasks(newTasksArray);
+
+    // Update totalTasks on the related sprint
+    sprintsRef.current = sprintsRef.current.map(s =>
+      s.id === newTask.sprintId ? { ...s, totalTasks: (s.totalTasks || 0) + 1 } : s
+    );
+    setSprints(sprintsRef.current);
+    // Persist
+    saveData();
   };
 
   // Função para adicionar múltiplas tarefas de uma vez
@@ -308,15 +339,81 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
     const newTasksArray = [...tasksRef.current, ...newTasks];
     tasksRef.current = newTasksArray;
     setTasks(newTasksArray);
+
+    // Update totalTasks counts per sprint
+    const counts: Record<string, number> = {};
+    newTasks.forEach(t => { counts[t.sprintId] = (counts[t.sprintId] || 0) + 1; });
+    sprintsRef.current = sprintsRef.current.map(s => ({
+      ...s,
+      totalTasks: (s.totalTasks || 0) + (counts[s.id] || 0)
+    }));
+    setSprints(sprintsRef.current);
     await saveData();
   };
 
   const updateTask = (id: string, updates: Partial<Task>) => {
-    setTasks(tasks.map(task => task.id === id ? { ...task, ...updates } : task));
+    // Update tasks using refs to keep single source of truth
+    const updatedTasks = tasksRef.current.map(t => t.id === id ? { ...t, ...updates } : t);
+    tasksRef.current = updatedTasks;
+    setTasks(updatedTasks);
+
+    // Re-evaluate sprint completion status for the affected sprint
+    const affected = updatedTasks.find(t => t.id === id);
+    if (!affected) return;
+    const sprintId = affected.sprintId;
+    const sprintTasks = updatedTasks.filter(t => t.sprintId === sprintId);
+    const allCompleted = sprintTasks.length > 0 && sprintTasks.every(t => t.status === 'completed');
+
+    const sprint = sprintsRef.current.find(s => s.id === sprintId);
+    if (!sprint) return;
+
+    if (allCompleted) {
+      // mark sprint completed and deactivate it
+      sprintsRef.current = sprintsRef.current.map(s => s.id === sprintId ? { ...s, isActive: false, status: 'completed' } : s);
+      setSprints(sprintsRef.current);
+
+      // If this sprint was the active sprint for its cliente, clear sprintAtiva
+      clientesRef.current = clientesRef.current.map(c => c.id === sprint.clienteId ? { ...c, sprintAtiva: undefined } : c);
+      setClientes(clientesRef.current);
+    } else {
+      // Not all completed: if sprint was marked completed, revert to appropriate status
+      sprintsRef.current = sprintsRef.current.map(s =>
+        s.id === sprintId ? { ...s, status: s.isActive ? 'in-progress' : 'planned' } : s
+      );
+      setSprints(sprintsRef.current);
+    }
+
+    // Persist changes
+    saveData();
   };
 
   const deleteTask = (id: string) => {
-    setTasks(tasks.filter(task => task.id !== id));
+    const toDelete = tasksRef.current.find(t => t.id === id);
+    if (!toDelete) return;
+    const newTasks = tasksRef.current.filter(task => task.id !== id);
+    tasksRef.current = newTasks;
+    setTasks(newTasks);
+
+    // Update totalTasks on the related sprint
+    sprintsRef.current = sprintsRef.current.map(s =>
+      s.id === toDelete.sprintId ? { ...s, totalTasks: Math.max(0, (s.totalTasks || 1) - 1) } : s
+    );
+    setSprints(sprintsRef.current);
+
+    // Re-evaluate completion for that sprint (if tasks now all completed)
+    const sprintTasks = newTasks.filter(t => t.sprintId === toDelete.sprintId);
+    if (sprintTasks.length > 0 && sprintTasks.every(t => t.status === 'completed')) {
+      sprintsRef.current = sprintsRef.current.map(s => s.id === toDelete.sprintId ? { ...s, isActive: false, status: 'completed' } : s);
+      setSprints(sprintsRef.current);
+      const sprintObj = sprintsRef.current.find(s => s.id === toDelete.sprintId);
+      if (sprintObj) {
+        clientesRef.current = clientesRef.current.map(c => c.id === sprintObj.clienteId ? { ...c, sprintAtiva: undefined } : c);
+        setClientes(clientesRef.current);
+      }
+    }
+
+    // Persist
+    saveData();
   };
 
   const getTasksBySprint = (sprintId: string) => {
