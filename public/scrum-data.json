@@ -1,11 +1,6 @@
 {
   "clientes": [
     {
-      "id": "f1e1cd79-966c-4342-ad4a-d2ba1636559e",
-      "nome": "Tech Solutions Inc",
-      "sprintAtiva": "353e0057-73d7-497b-9300-7b4d7b0721b3"
-    },
-    {
       "id": "09714b13-245a-4f49-8715-1b5a3366a08f",
       "nome": "Digital Innovations Ltd",
       "sprintAtiva": "c8e03d0d-278e-4879-9af4-1b3d214aa1b4"
@@ -30,26 +25,6 @@
   ],
   "sprints": [
     {
-      "id": "353e0057-73d7-497b-9300-7b4d7b0721b3",
-      "clienteId": "f1e1cd79-966c-4342-ad4a-d2ba1636559e",
-      "name": "Sprint 1 - Setup Inicial",
-      "startDate": "2025-11-03",
-      "endDate": "2025-11-17",
-      "totalTasks": 4,
-      "isActive": true,
-      "status": "in-progress"
-    },
-    {
-      "id": "1123544f-9fa0-4489-a8c2-37e6b527d771",
-      "clienteId": "f1e1cd79-966c-4342-ad4a-d2ba1636559e",
-      "name": "Sprint 2 - Desenvolvimento",
-      "startDate": "2025-11-17",
-      "endDate": "2025-12-01",
-      "totalTasks": 0,
-      "isActive": false,
-      "status": "planned"
-    },
-    {
       "id": "c8e03d0d-278e-4879-9af4-1b3d214aa1b4",
       "clienteId": "09714b13-245a-4f49-8715-1b5a3366a08f",
       "name": "Sprint 1 - Prototipagem",
@@ -61,42 +36,6 @@
     }
   ],
   "tasks": [
-    {
-      "id": "27dca000-308b-4f14-ac36-4d144a535fa8",
-      "sprintId": "353e0057-73d7-497b-9300-7b4d7b0721b3",
-      "description": "Configurar ambiente de desenvolvimento",
-      "status": "completed",
-      "assignee": "João Silva",
-      "date": "2025-11-03",
-      "timeSpent": 4
-    },
-    {
-      "id": "8eaa41be-e0e2-4f1d-a4fa-d80799959d0b",
-      "sprintId": "353e0057-73d7-497b-9300-7b4d7b0721b3",
-      "description": "Criar estrutura de pastas do projeto",
-      "status": "in-progress",
-      "assignee": "Pedro Costa",
-      "date": null,
-      "timeSpent": 2
-    },
-    {
-      "id": "bf70311e-d08a-4478-b360-05e461330f5e",
-      "sprintId": "353e0057-73d7-497b-9300-7b4d7b0721b3",
-      "description": "Implementar componente Header",
-      "status": "pending",
-      "assignee": null,
-      "date": null,
-      "timeSpent": null
-    },
-    {
-      "id": "1ae5a22f-7b54-4577-b2e3-eafeb15572f6",
-      "sprintId": "353e0057-73d7-497b-9300-7b4d7b0721b3",
-      "description": "Configurar banco de dados",
-      "status": "pending",
-      "assignee": "Maria Santos",
-      "date": null,
-      "timeSpent": null
-    },
     {
       "id": "2430388a-767f-4dc8-b2c9-2c16451adc3b",
       "sprintId": "c8e03d0d-278e-4879-9af4-1b3d214aa1b4",

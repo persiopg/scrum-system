@@ -222,12 +222,40 @@ export function ScrumProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteCliente = (id: string) => {
-    setClientes(clientes.filter(cliente => cliente.id !== id));
-    // Remover sprints associadas
-    setSprints(sprints.filter(sprint => sprint.clienteId !== id));
-    // Remover tarefas associadas
-    const sprintIds = sprints.filter(s => s.clienteId === id).map(s => s.id);
-    setTasks(tasks.filter(task => !sprintIds.includes(task.sprintId)));
+    const sprintsToRemove = sprintsRef.current.filter(sprint => sprint.clienteId === id);
+    const sprintIds = sprintsToRemove.map(sprint => sprint.id);
+
+    // Remove cliente e limpa referência de sprint ativa que caiu junto
+    const remainingClientes = clientesRef.current
+      .filter(cliente => cliente.id !== id)
+      .map(cliente => (sprintIds.includes(cliente.sprintAtiva ?? '')
+        ? { ...cliente, sprintAtiva: undefined }
+        : cliente));
+    clientesRef.current = remainingClientes;
+    setClientes(remainingClientes);
+
+    // Remove sprints e tarefas que pertenciam ao cliente
+    const remainingSprints = sprintsRef.current.filter(sprint => sprint.clienteId !== id);
+    sprintsRef.current = remainingSprints;
+    setSprints(remainingSprints);
+
+    const remainingTasks = tasksRef.current.filter(task => !sprintIds.includes(task.sprintId));
+    tasksRef.current = remainingTasks;
+    setTasks(remainingTasks);
+
+    // Garantir que cliente selecionado não aponte para registro inexistente
+    if (selectedClienteId === id) {
+      setSelectedClienteId(null);
+      try {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('selectedCliente');
+        }
+      } catch {
+        // ignore storage errors
+      }
+    }
+
+    saveData();
   };
 
   const addSprint = async (sprint: Omit<Sprint, 'id'>) => {
